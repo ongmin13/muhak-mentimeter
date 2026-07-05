@@ -2,89 +2,149 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>무학고 부자캠프 - 참여</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 :root{
   --bg:#FBF2E2; --panel:#FFFFFF; --panel2:#F3E4CC;
-  --accent:#D97A42; --accent2:#8C5A2B; --text:#3A2A1E; --muted:#9C8770; --line:#E6D4B8;
+  --accent:#D97A42; --accent2:#8C5A2B; --text:#3A2A1E;
+  --muted:#9C8770; --line:#E6D4B8;
 }
-*{box-sizing:border-box;}
-html,body{height:100%;}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html{height:100%;}
 body{
-  margin:0; font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;
-  background:var(--bg); color:var(--text);
-  display:flex; align-items:center; justify-content:center; padding:20px;
+  margin:0;
+  font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100%;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:24px 16px 40px;
 }
-.card{width:100%; max-width:420px;}
-h1{font-size:20px; text-align:center; margin-bottom:4px;}
+.card{width:100%; max-width:480px;}
+
+/* ── 입장 화면 ── */
+.join-header{text-align:center; margin-bottom:28px;}
+.join-header .emoji{font-size:52px; margin-bottom:10px;}
+h1{font-size:22px; margin:0 0 6px; font-weight:800;}
 h1 span{color:var(--accent);}
-.sub{text-align:center; color:var(--muted); font-size:13px; margin-bottom:28px;}
-
+.sub{color:var(--muted); font-size:14px;}
 .join-box input{
-  width:100%; padding:16px; font-size:22px; text-align:center; letter-spacing:6px;
-  border-radius:12px; border:1px solid var(--line); background:var(--panel2); color:var(--text);
-  margin-bottom:12px;
+  width:100%; padding:18px; font-size:28px; text-align:center;
+  letter-spacing:8px; border-radius:14px; border:2px solid var(--line);
+  background:var(--panel); color:var(--text); margin-bottom:12px;
+  font-weight:700;
 }
+.join-box input:focus{outline:none; border-color:var(--accent);}
 .join-box button{
-  width:100%; padding:14px; border:none; border-radius:12px; background:var(--accent);
-  color:#FBF2E2; font-weight:800; font-size:16px; cursor:pointer;
+  width:100%; padding:16px; border:none; border-radius:14px;
+  background:var(--accent); color:#FBF2E2; font-weight:800;
+  font-size:17px; cursor:pointer; letter-spacing:.5px;
 }
-.err{color:var(--accent2); text-align:center; font-size:13px; margin-top:10px; min-height:16px;}
+.join-box button:active{opacity:.85;}
+.err{color:#c0392b; text-align:center; font-size:13px; margin-top:10px; min-height:18px;}
 
-.wait{text-align:center; color:var(--muted); padding:60px 0; font-size:15px; line-height:1.8;}
-.dot{display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent); margin:0 2px; animation:blink 1.4s infinite;}
+/* ── 대기 화면 ── */
+.wait{text-align:center; padding:60px 0; font-size:16px; color:var(--muted); line-height:2.2;}
+.wait .emoji{font-size:48px; display:block; margin-bottom:12px;}
+.dot{display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent); margin:0 3px; animation:blink 1.4s infinite;}
 .dot:nth-child(2){animation-delay:.2s;} .dot:nth-child(3){animation-delay:.4s;}
 @keyframes blink{0%,80%,100%{opacity:.2;} 40%{opacity:1;}}
 
-.q-card{
-  background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:26px 22px;
-}
+/* ── 슬라이드 화면 ── */
+.slide-wrap{display:flex; flex-direction:column; gap:16px;}
+
+/* 진행률 */
+.progress-wrap{padding:0 2px;}
+.progress-bar-bg{height:8px; background:var(--panel2); border-radius:999px; overflow:hidden;}
+.progress-bar-fill{height:100%; background:var(--accent); border-radius:999px; transition:width .4s ease;}
+.progress-text{text-align:center; font-size:12px; color:var(--muted); margin-top:6px; font-weight:600;}
+
+/* 질문 카드 */
+.q-card{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:22px 18px;}
 .q-type{
-  display:inline-block; font-size:11px; color:var(--accent); border:1px solid var(--accent);
-  padding:3px 9px; border-radius:999px; margin-bottom:12px;
+  display:inline-block; font-size:11px; color:var(--accent);
+  border:1px solid var(--accent); padding:3px 10px; border-radius:999px; margin-bottom:14px;
 }
-.q-text{font-size:21px; font-weight:800; line-height:1.4; margin-bottom:22px;}
+.q-text{font-size:20px; font-weight:800; line-height:1.5; margin-bottom:20px; word-break:keep-all;}
 
+/* 객관식 */
 .mc-opt{
-  display:block; width:100%; text-align:left; padding:15px 16px; margin-bottom:10px;
-  border-radius:12px; border:1px solid var(--line); background:var(--panel2); color:var(--text);
-  font-size:15px; cursor:pointer; transition:.15s;
+  display:block; width:100%; text-align:left; padding:16px 16px;
+  margin-bottom:10px; border-radius:13px; border:2px solid var(--line);
+  background:var(--panel2); color:var(--text); font-size:16px;
+  cursor:pointer; transition:.12s; font-family:inherit; font-weight:500;
+  -webkit-appearance:none;
 }
-.mc-opt:hover{border-color:var(--accent);}
-.mc-opt.picked{border-color:var(--accent); background:#FBE6D3;}
+.mc-opt:last-of-type{margin-bottom:0;}
+.mc-opt:active{opacity:.8;}
+.mc-opt.picked{border-color:var(--accent); background:#FBE6D3; font-weight:700; color:var(--accent2);}
 
+/* OX */
 .ox-row{display:flex; gap:14px;}
 .ox-btn{
-  flex:1; padding:36px 0; border-radius:16px; border:1px solid var(--line); background:var(--panel2);
-  font-size:36px; font-weight:900; cursor:pointer; color:var(--text);
+  flex:1; padding:0; height:130px; border-radius:18px;
+  border:2px solid var(--line); background:var(--panel2);
+  font-size:52px; font-weight:900; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  -webkit-appearance:none; transition:.12s;
 }
-.ox-btn.o{color:var(--accent);} .ox-btn.x{color:var(--accent2);}
-.ox-btn.picked{border-color:currentColor; background:#FBE6D3;}
+.ox-btn:active{opacity:.8; transform:scale(.97);}
+.ox-btn.o{color:var(--accent);}
+.ox-btn.x{color:var(--accent2);}
+.ox-btn.picked{border-color:currentColor; background:#FBE6D3; border-width:3px;}
 
+/* 워드클라우드 */
 .wc-area textarea{
-  width:100%; min-height:90px; padding:14px; border-radius:12px; border:1px solid var(--line);
-  background:var(--panel2); color:var(--text); font-size:15px; margin-bottom:12px; font-family:inherit; resize:vertical;
+  width:100%; min-height:100px; padding:14px; border-radius:13px;
+  border:2px solid var(--line); background:var(--panel2); color:var(--text);
+  font-size:16px; font-family:inherit; resize:none;
+  line-height:1.6;
 }
-.submit-btn{
-  width:100%; padding:14px; border:none; border-radius:12px; background:var(--accent);
-  color:#FBF2E2; font-weight:800; font-size:15px; cursor:pointer;
+.wc-area textarea:focus{outline:none; border-color:var(--accent);}
+
+/* 제출 완료 뱃지 */
+.answered-badge{
+  text-align:center; color:var(--accent); font-weight:700;
+  font-size:14px; padding:10px 0; background:#FBE6D3;
+  border-radius:10px; margin-top:4px;
 }
-.submit-btn:disabled{opacity:.5; cursor:not-allowed;}
-.done-msg{
-  text-align:center; color:var(--accent); font-weight:700; margin-top:16px; font-size:14px;
+
+/* 네비게이션 */
+.nav-row{display:flex; gap:10px;}
+.nav-btn{
+  flex:1; padding:16px; border-radius:13px; border:2px solid var(--line);
+  background:var(--panel); color:var(--text); font-size:15px;
+  cursor:pointer; font-weight:700; font-family:inherit;
+  -webkit-appearance:none;
 }
+.nav-btn:active{opacity:.8;}
+.nav-btn.submit{
+  flex:2; background:var(--accent); border-color:var(--accent);
+  color:#FBF2E2; font-size:16px;
+}
+.nav-btn:disabled{opacity:.35; cursor:not-allowed;}
+
+/* ── 완료 화면 ── */
+.done-screen{text-align:center; padding:60px 0;}
+.done-screen .emoji{font-size:64px; margin-bottom:16px; display:block;}
+.done-screen .msg{font-size:22px; font-weight:800; color:var(--accent); margin-bottom:8px;}
+.done-screen .sub2{color:var(--muted); font-size:14px; line-height:1.8;}
 </style>
 </head>
 <body>
-
 <div class="card" id="card">
-  <h1>무학고 <span>부자캠프</span></h1>
-  <div class="sub">선생님이 알려준 입장 코드를 입력하세요</div>
+  <div class="join-header">
+    <div class="emoji">👨‍👦</div>
+    <h1>무학고 <span>부자캠프</span></h1>
+    <div class="sub">선생님이 알려준 입장 코드를 입력하세요</div>
+  </div>
   <div class="join-box">
-    <input type="text" id="codeInput" maxlength="4" inputmode="numeric" placeholder="0000">
+    <input type="tel" id="codeInput" maxlength="4" inputmode="numeric" placeholder="0000">
     <button id="joinBtn">입장하기</button>
     <div class="err" id="errMsg"></div>
   </div>
@@ -104,100 +164,135 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let sessionCode = null;
-let respondedSlideId = null;
+let participantId = null;
+let slides = [];
+let currentIdx = 0;
+let answers = {};
+let submitted = {};
 
 const params = new URLSearchParams(location.search);
 const urlCode = params.get('code');
-if(urlCode){
-  document.getElementById('codeInput').value = urlCode;
-  tryJoin(urlCode);
-}
+if(urlCode){ document.getElementById('codeInput').value = urlCode; tryJoin(urlCode); }
 
 document.getElementById('joinBtn').onclick = ()=> tryJoin(document.getElementById('codeInput').value.trim());
-document.getElementById('codeInput').addEventListener('keydown', e=>{
-  if(e.key === 'Enter') tryJoin(document.getElementById('codeInput').value.trim());
-});
+document.getElementById('codeInput').addEventListener('keydown', e=>{ if(e.key==='Enter') tryJoin(document.getElementById('codeInput').value.trim()); });
 
 function tryJoin(code){
   const errEl = document.getElementById('errMsg');
   errEl.textContent = '';
   if(!/^\d{4}$/.test(code)){ errEl.textContent = '4자리 숫자 코드를 입력해주세요.'; return; }
   db.ref('sessions/'+code).get().then(snap=>{
-    if(!snap.exists()){ errEl.textContent = '존재하지 않는 코드입니다. 다시 확인해주세요.'; return; }
+    if(!snap.exists()){ errEl.textContent = '존재하지 않는 코드입니다.'; return; }
     sessionCode = code;
-    enterWaitRoom();
-    listenActive();
+    participantId = db.ref('sessions/'+sessionCode+'/participants').push().key;
+    db.ref('sessions/'+sessionCode+'/participants/'+participantId).set({joinedAt: Date.now()});
+    listenSession();
   });
 }
 
-function enterWaitRoom(){
+function listenSession(){
+  showWait('선생님이 세션을 시작하기를 기다리는 중');
+  db.ref('sessions/'+sessionCode+'/started').on('value', snap=>{
+    if(snap.val() === true){ listenSlides(); }
+    else { showWait('선생님이 세션을 시작하기를 기다리는 중'); }
+  });
+}
+
+function listenSlides(){
+  db.ref('sessions/'+sessionCode+'/slides').on('value', snap=>{
+    const raw = snap.val()||{};
+    slides = Object.entries(raw)
+      .sort((a,b)=>a[1].createdAt - b[1].createdAt)
+      .map(([id,s])=>({id,...s}));
+    if(slides.length === 0){ showWait('슬라이드를 준비 중입니다'); }
+    else { renderSlide(currentIdx); }
+  });
+}
+
+function showWait(msg){
   document.getElementById('card').innerHTML = `
     <div class="wait">
-      입장했습니다<br>
-      선생님이 슬라이드를 켜기를 기다리는 중<span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="emoji">👨‍👦</span>
+      ${msg}<br>
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
     </div>`;
 }
 
-function listenActive(){
-  db.ref('sessions/'+sessionCode+'/active').on('value', snap=>{
-    const active = snap.val();
-    if(!active) { enterWaitRoom(); return; }
-    renderQuestion(active);
-  });
-}
-
-function renderQuestion(s){
+function renderSlide(idx){
+  if(!slides.length) return;
+  currentIdx = Math.max(0, Math.min(idx, slides.length-1));
+  const s = slides[currentIdx];
   const typeLabel = {mc:'객관식 투표', wordcloud:'워드클라우드', ox:'OX 투표'};
-  const card = document.getElementById('card');
-  const alreadyDone = respondedSlideId === s.id;
+  const pct = Math.round(((currentIdx+1)/slides.length)*100);
+  const isLast = currentIdx === slides.length-1;
 
   let bodyHtml = '';
-  if(s.type === 'mc'){
-    bodyHtml = s.options.map((o,i)=>`<button class="mc-opt" data-val="${escapeAttr(o)}">${escapeHtml(o)}</button>`).join('');
-  } else if(s.type === 'ox'){
+  if(s.type==='mc'){
+    bodyHtml = s.options.map(o=>
+      `<button class="mc-opt${answers[s.id]===o?' picked':''}" data-val="${escapeAttr(o)}">${escapeHtml(o)}</button>`
+    ).join('');
+  } else if(s.type==='ox'){
     bodyHtml = `<div class="ox-row">
-      <button class="ox-btn o" data-val="O">O</button>
-      <button class="ox-btn x" data-val="X">X</button>
+      <button class="ox-btn o${answers[s.id]==='O'?' picked':''}" data-val="O">O</button>
+      <button class="ox-btn x${answers[s.id]==='X'?' picked':''}" data-val="X">X</button>
     </div>`;
-  } else if(s.type === 'wordcloud'){
+  } else if(s.type==='wordcloud'){
     bodyHtml = `<div class="wc-area">
-      <textarea id="wcInput" placeholder="한 단어 또는 짧은 문장을 입력하세요" maxlength="30"></textarea>
-      <button class="submit-btn" id="wcSubmit">제출하기</button>
+      <textarea id="wcInput" placeholder="한 단어 또는 짧은 문장을 입력하세요" maxlength="30">${answers[s.id]||''}</textarea>
     </div>`;
   }
 
-  card.innerHTML = `
-    <div class="q-card">
-      <div class="q-type">${typeLabel[s.type]}</div>
-      <div class="q-text">${escapeHtml(s.question)}</div>
-      ${alreadyDone ? '<div class="done-msg">제출 완료! 다음 슬라이드를 기다려주세요.</div>' : bodyHtml}
-    </div>
-  `;
+  document.getElementById('card').innerHTML = `
+    <div class="slide-wrap">
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+        <div class="progress-text">${currentIdx+1} / ${slides.length}</div>
+      </div>
+      <div class="q-card">
+        <div class="q-type">${typeLabel[s.type]}</div>
+        <div class="q-text">${escapeHtml(s.question)}</div>
+        ${bodyHtml}
+        ${submitted[s.id] ? '<div class="answered-badge">✓ 제출 완료</div>' : ''}
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn" id="prevBtn" ${currentIdx===0?'disabled':''}>← 이전</button>
+        <button class="nav-btn submit" id="submitBtn">${isLast ? '완료 🎉' : '다음 →'}</button>
+      </div>
+    </div>`;
 
-  if(alreadyDone) return;
-
-  if(s.type === 'mc' || s.type === 'ox'){
-    card.querySelectorAll('[data-val]').forEach(btn=>{
-      btn.onclick = ()=> submitResponse(s.id, btn.dataset.val, card);
+  if(s.type==='mc'||s.type==='ox'){
+    document.querySelectorAll('[data-val]').forEach(btn=>{
+      btn.onclick = ()=>{ answers[s.id]=btn.dataset.val; renderSlide(currentIdx); };
     });
-  } else if(s.type === 'wordcloud'){
-    document.getElementById('wcSubmit').onclick = ()=>{
-      const val = document.getElementById('wcInput').value.trim();
-      if(!val) return;
-      submitResponse(s.id, val, card);
-    };
   }
+  document.getElementById('prevBtn').onclick = ()=> renderSlide(currentIdx-1);
+  document.getElementById('submitBtn').onclick = ()=> submitAndNext(s, isLast);
 }
 
-function submitResponse(slideId, value, card){
-  db.ref('sessions/'+sessionCode+'/responses/'+slideId).push(value);
-  respondedSlideId = slideId;
-  card.innerHTML = `<div class="q-card"><div class="done-msg">제출 완료! 다음 슬라이드를 기다려주세요.</div></div>`;
+function submitAndNext(s, isLast){
+  let val = answers[s.id];
+  if(s.type==='wordcloud'){
+    val = document.getElementById('wcInput')?.value.trim();
+    if(val) answers[s.id] = val;
+  }
+  if(val !== undefined && val !== ''){
+    db.ref('sessions/'+sessionCode+'/responses/'+s.id+'/'+participantId).set(val);
+    submitted[s.id] = true;
+  }
+  if(isLast){ showDone(); }
+  else { renderSlide(currentIdx+1); }
 }
 
-function escapeHtml(str){
-  return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+function showDone(){
+  document.getElementById('card').innerHTML = `
+    <div class="done-screen">
+      <span class="emoji">🎉</span>
+      <div class="msg">모든 답변 완료!</div>
+      <div class="sub2">오늘 부자캠프에 함께해줘서 고마워요<br>👨‍👦 소중한 시간이었어요</div>
+    </div>`;
 }
+
+function escapeHtml(str){ return String(str).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function escapeAttr(str){ return escapeHtml(str).replace(/"/g,'&quot;'); }
 </script>
 </body>
