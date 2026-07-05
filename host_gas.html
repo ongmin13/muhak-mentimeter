@@ -50,7 +50,13 @@ body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-
 .slide-item.active{border-color:var(--accent);background:#FBE6D3;}
 .slide-item .left{display:flex;align-items:center;gap:7px;}
 .slide-item .tag{font-size:10px;padding:2px 6px;border-radius:5px;background:var(--line);color:var(--muted);}
-.slide-item .resp-badge{font-size:11px;color:var(--accent);font-weight:700;}
+.slide-item .drag-handle{
+  cursor:grab; color:var(--muted); font-size:14px; padding:0 4px; margin-right:2px;
+  user-select:none;
+}
+.slide-item .drag-handle:active{cursor:grabbing;}
+.slide-item.dragging{opacity:.4; border:1px dashed var(--accent);}
+.slide-item.drag-over{border-color:var(--accent); background:#FBE6D3; transform:scale(1.01);}
 .slide-item .del{color:#c0392b;cursor:pointer;font-size:11px;margin-left:4px;padding:2px 5px;}
 .add-section{border-top:1px solid var(--line);padding-top:14px;}
 .type-tabs{display:flex;gap:5px;margin-bottom:9px;}
@@ -84,8 +90,21 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
 .ox-box .cnt{font-size:20px;margin-top:7px;font-weight:700;}
 .cloud{display:flex;flex-wrap:wrap;gap:12px 18px;justify-content:center;align-items:center;padding:20px;}
 .cloud-word{display:inline-block;font-weight:800;transform-origin:center bottom;animation-name:sway;animation-timing-function:ease-in-out;animation-iteration-count:infinite;}
-.cloud-word .inner{display:inline-block;transition:transform .25s ease;}
-.cloud-word:hover .inner{transform:scale(1.22);}
+.cloud-word .inner{
+  display:inline-block;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1), filter .3s ease, text-shadow .3s ease;
+}
+.cloud-word:hover .inner{
+  transform:scale(1.5);
+  filter:brightness(1.25);
+  text-shadow:0 0 20px currentColor, 0 0 40px currentColor, 0 0 8px rgba(255,255,255,.6);
+}
+.cloud-word.pop-in .inner{animation:popIn .45s cubic-bezier(.34,1.56,.64,1) forwards;}
+@keyframes popIn{
+  0%{transform:scale(0) rotate(-8deg); opacity:0;}
+  60%{transform:scale(1.25) rotate(3deg); opacity:1;}
+  100%{transform:scale(1) rotate(0deg); opacity:1;}
+}
 @keyframes sway{0%{transform:rotate(-4deg);}50%{transform:rotate(4deg);}100%{transform:rotate(-4deg);}}
 
 /* 참여 현황 패널 */
@@ -112,7 +131,20 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
   padding:48px 64px;
 }
 .presenter.show{display:flex;}
-.presenter-exit{
+.presenter-slide-counter{
+  position:absolute; top:20px; left:50%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:10px;
+  background:rgba(255,255,255,.1); border-radius:999px; padding:7px 20px;
+}
+.presenter-slide-counter .cur{font-size:22px; font-weight:900; color:#fff;}
+.presenter-slide-counter .sep{font-size:16px; color:rgba(255,255,255,.4);}
+.presenter-slide-counter .tot{font-size:16px; font-weight:600; color:rgba(255,255,255,.5);}
+.presenter-slide-counter .dots{display:flex; gap:5px; margin-left:6px;}
+.presenter-slide-counter .dot{
+  width:8px; height:8px; border-radius:50%;
+  background:rgba(255,255,255,.25); transition:.3s;
+}
+.presenter-slide-counter .dot.active{background:#E8A23D; transform:scale(1.3);}
   position:absolute; top:20px; right:24px;
   background:rgba(255,255,255,.12); border:none; color:#fff;
   border-radius:10px; padding:8px 16px; font-size:13px; cursor:pointer;
@@ -158,7 +190,17 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
 .p-ox-box .p-cnt{font-size:52px;font-weight:800;color:#fff;margin-top:14px;}
 .p-cloud{display:flex;flex-wrap:wrap;gap:18px 28px;justify-content:center;align-items:center;padding:10px;}
 .p-cloud-word{display:inline-block;font-weight:800;transform-origin:center bottom;animation-name:sway;animation-timing-function:ease-in-out;animation-iteration-count:infinite;}
-.p-cloud-word .inner{display:inline-block;transition:transform .25s ease;color:#fff;}
+.p-cloud-word .inner{
+  display:inline-block;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1), filter .3s ease, text-shadow .3s ease;
+  color:#fff;
+}
+.p-cloud-word:hover .inner{
+  transform:scale(1.5);
+  filter:brightness(1.3);
+  text-shadow:0 0 30px currentColor, 0 0 60px currentColor, 0 0 12px rgba(255,255,255,.8);
+}
+.p-cloud-word.pop-in .inner{animation:popIn .45s cubic-bezier(.34,1.56,.64,1) forwards;}
 .p-no-slide{color:rgba(255,255,255,.4);font-size:26px;text-align:center;}
 
 /* 역할 구분 */
@@ -331,6 +373,12 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
 <!-- 발표자 모드 오버레이 -->
 <div class="presenter" id="presenterOverlay">
   <div class="presenter-code" id="pCode">코드 <b>----</b></div>
+  <div class="presenter-slide-counter" id="pSlideCounter" style="display:none;">
+    <span class="cur" id="pSlideCur">1</span>
+    <span class="sep">/</span>
+    <span class="tot" id="pSlideTot">1</span>
+    <div class="dots" id="pSlideDots"></div>
+  </div>
   <button class="presenter-exit" id="presenterExitBtn">✕ 발표자 모드 종료</button>
   <div id="presenterContent" style="display:flex;flex-direction:column;align-items:center;width:100%;">
     <div class="p-no-slide">왼쪽 슬라이드 목록에서 슬라이드를 클릭하면<br>여기에 실시간으로 표시됩니다.</div>
@@ -372,6 +420,7 @@ let activeSlideId = null;
 let sessionStarted = false;
 let responseCounts = {};
 let participantsData = {}; // pid -> {role}
+let knownWords = {}; // slideId -> Set(word) — 이미 표시된 단어 추적용
 
 function genCode(){ return String(Math.floor(1000 + Math.random()*9000)); }
 
@@ -482,12 +531,16 @@ function renderSlideList(){
   const targetLabel={all:'공통',father:'아버지',son:'아들'};
   const list=document.getElementById('slideList');
   list.innerHTML='';
-  Object.entries(slides).sort((a,b)=>a[1].createdAt-b[1].createdAt).forEach(([id,s])=>{
+  const sorted = Object.entries(slides).sort((a,b)=>a[1].createdAt-b[1].createdAt);
+  sorted.forEach(([id,s])=>{
     const item=document.createElement('div');
     item.className='slide-item'+(id===activeSlideId?' active':'');
+    item.draggable=true;
+    item.dataset.id=id;
     const cnt=responseCounts[id]||0;
     const tgt=s.target||'all';
     item.innerHTML=`<div class="left">
+      <span class="drag-handle" title="드래그하여 순서 변경">⠿</span>
       <span class="tag">${typeLabel[s.type]}</span>
       <span class="target-badge ${tgt}">${targetLabel[tgt]}</span>
       <span>${s.question.slice(0,12)}${s.question.length>12?'…':''}</span>
@@ -497,7 +550,33 @@ function renderSlideList(){
       e.stopPropagation();
       if(confirm('삭제할까요?')) db.ref('sessions/'+sessionCode+'/slides/'+id).remove();
     };
-    item.onclick=()=> showSlideResult(id);
+    item.onclick = e=>{
+      if(e.target.classList.contains('drag-handle') || e.target.classList.contains('del')) return;
+      showSlideResult(id);
+    };
+
+    // 드래그 이벤트
+    item.addEventListener('dragstart', e=>{
+      e.dataTransfer.effectAllowed='move';
+      e.dataTransfer.setData('text/plain', id);
+      setTimeout(()=> item.classList.add('dragging'), 0);
+    });
+    item.addEventListener('dragend', ()=> item.classList.remove('dragging'));
+    item.addEventListener('dragover', e=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+      document.querySelectorAll('.slide-item').forEach(el=>el.classList.remove('drag-over'));
+      item.classList.add('drag-over');
+    });
+    item.addEventListener('dragleave', ()=> item.classList.remove('drag-over'));
+    item.addEventListener('drop', e=>{
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      const draggedId = e.dataTransfer.getData('text/plain');
+      if(draggedId === id) return;
+      reorderSlides(draggedId, id);
+    });
+
     list.appendChild(item);
   });
 }
@@ -530,6 +609,24 @@ function showSlideResult(id){
     renderResults(s, responses);
     renderPresenter(s, id, responses);
   });
+  updatePresenterCounter(id);
+}
+
+function updatePresenterCounter(id){
+  const sorted = getSortedSlideIds();
+  const cur = sorted.indexOf(id) + 1;
+  const tot = sorted.length;
+  const counter = document.getElementById('pSlideCounter');
+  if(!counter) return;
+  counter.style.display = tot > 0 ? 'flex' : 'none';
+  document.getElementById('pSlideCur').textContent = cur;
+  document.getElementById('pSlideTot').textContent = tot;
+  // 점 표시 (개수 제한 없음)
+  const dotsEl = document.getElementById('pSlideDots');
+  dotsEl.innerHTML = sorted.map((sid,i)=>
+    `<div class="dot${sid===id?' active':''}"></div>`
+  ).join('');
+  dotsEl.style.display='flex';
 }
 
 function renderResults(s, responses){
@@ -669,15 +766,32 @@ function renderRoleResult(s, vals, container, role){
       : role==='son'
       ? ['#5A9E6F','#E8A23D','#7dd4a0','#ff9f7a','#4A7FA5','#a8dbb9','#f4c77a','#6bb5e0']
       : ['#D97A42','#4A7FA5','#E8A23D','#5A9E6F','#ff9f7a','#6bb5e0','#c97b3d','#7dd4a0'];
+
+    // 새 단어 추적
+    const slideKey = (activeSlideId||'')+'_'+role;
+    if(!knownWords[slideKey]) knownWords[slideKey] = new Set();
+    const newWords = entries.map(([w])=>w).filter(w=>!knownWords[slideKey].has(w));
+    entries.forEach(([w])=> knownWords[slideKey].add(w));
+
     container.innerHTML=`<div class="cloud">${entries.map(([w,c],i)=>{
       const size=12+(c/max)*36;
       const color=colors[i%colors.length];
       const dur=(3+Math.random()*2).toFixed(2);
       const delay=(Math.random()*3).toFixed(2);
-      return `<span class="cloud-word" style="animation-duration:${dur}s;animation-delay:-${delay}s;">
+      const isNew = newWords.includes(w);
+      return `<span class="cloud-word${isNew?' pop-in':''}" style="animation-duration:${dur}s;animation-delay:-${delay}s;" data-word="${escapeAttr(w)}">
         <span class="inner" style="font-size:${size}px;color:${color}">${escapeHtml(w)}</span>
       </span>`;
     }).join('')}</div>`;
+
+    // pop-in 클래스는 애니메이션 끝나면 제거 (반복 방지)
+    container.querySelectorAll('.pop-in').forEach(el=>{
+      el.addEventListener('animationend', ()=> el.classList.remove('pop-in'), {once:true});
+    });
+    // 새 단어마다 약간 간격을 두고 효과음 재생
+    newWords.forEach((_, i)=>{
+      setTimeout(()=> playBubblePop(), i * 80);
+    });
   }
 }
 
@@ -770,20 +884,87 @@ function renderPresenterRoleResult(s, vals, container, role){
     vals.forEach(v=>{ const w=String(v).trim(); if(w) freq[w]=(freq[w]||0)+1; });
     const entries=Object.entries(freq).sort((a,b)=>b[1]-a[1]);
     const max=Math.max(1,...entries.map(e=>e[1]));
+
+    const slideKey = (activeSlideId||'')+'_p_'+role;
+    if(!knownWords[slideKey]) knownWords[slideKey] = new Set();
+    const newWords = entries.map(([w])=>w).filter(w=>!knownWords[slideKey].has(w));
+    entries.forEach(([w])=> knownWords[slideKey].add(w));
+
     container.innerHTML=`<div class="p-cloud">${entries.map(([w,c],i)=>{
       const size=16+(c/max)*44;
       const color=colors[i%colors.length];
       const dur=(3+Math.random()*2).toFixed(2);
       const delay=(Math.random()*3).toFixed(2);
-      return `<span class="p-cloud-word" style="animation-duration:${dur}s;animation-delay:-${delay}s;">
+      const isNew = newWords.includes(w);
+      return `<span class="p-cloud-word${isNew?' pop-in':''}" style="animation-duration:${dur}s;animation-delay:-${delay}s;">
         <span class="inner" style="font-size:${size}px;color:${color}">${escapeHtml(w)}</span>
       </span>`;
     }).join('')}</div>`;
-  }
+    container.querySelectorAll('.pop-in').forEach(el=>{
+      el.addEventListener('animationend', ()=> el.classList.remove('pop-in'), {once:true});
+    });
+    newWords.forEach((_, i)=>{
+      setTimeout(()=> playBubblePop(), i * 80);
+    });
 }
 
 function escapeHtml(str){
   return String(str).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+// ── 버블 팝 효과음 ──
+let audioCtx = null;
+function getAudioCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playBubblePop(){
+  try{
+    const ctx = getAudioCtx();
+    // 약간씩 다른 음정으로 자연스럽게
+    const freq = 520 + Math.random() * 180;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    filter.type = 'bandpass';
+    filter.frequency.value = freq;
+    filter.Q.value = 1.2;
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq * 1.4, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.6, ctx.currentTime + 0.12);
+
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.18);
+  } catch(e){}
+}
+
+// ── 슬라이드 순서 재정렬 ──
+  const sorted = Object.entries(slides).sort((a,b)=>a[1].createdAt-b[1].createdAt).map(([id])=>id);
+  const fromIdx = sorted.indexOf(draggedId);
+  const toIdx   = sorted.indexOf(targetId);
+  if(fromIdx === -1 || toIdx === -1) return;
+
+  sorted.splice(fromIdx, 1);
+  sorted.splice(toIdx, 0, draggedId);
+
+  // createdAt을 순서대로 재할당
+  const now = Date.now();
+  const updates = {};
+  sorted.forEach((id, i)=>{
+    updates['sessions/'+sessionCode+'/slides/'+id+'/createdAt'] = now + i;
+  });
+  db.ref().update(updates);
 }
 
 // ── 사이드바 토글 ──
@@ -823,8 +1004,7 @@ function navigatePresenter(dir){
   if(ids[next] !== activeSlideId){
     showSlideResult(ids[next]);
   }
-}
-document.getElementById('saveTemplateBtn').onclick = ()=>{
+}document.getElementById('saveTemplateBtn').onclick = ()=>{
   const slideArr = Object.values(slides);
   if(!slideArr.length){ alert('저장할 슬라이드가 없습니다.'); return; }
   document.getElementById('tplNameInput').value = '';
