@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>무학고 부자캠프 - 참여</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{
+  --bg:#FBF2E2; --panel:#FFFFFF; --panel2:#F3E4CC;
+  --accent:#D97A42; --accent2:#8C5A2B; --text:#3A2A1E; --muted:#9C8770; --line:#E6D4B8;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0; font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;
+  background:var(--bg); color:var(--text);
+  display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.card{width:100%; max-width:420px;}
+h1{font-size:20px; text-align:center; margin-bottom:4px;}
+h1 span{color:var(--accent);}
+.sub{text-align:center; color:var(--muted); font-size:13px; margin-bottom:28px;}
+
+.join-box input{
+  width:100%; padding:16px; font-size:22px; text-align:center; letter-spacing:6px;
+  border-radius:12px; border:1px solid var(--line); background:var(--panel2); color:var(--text);
+  margin-bottom:12px;
+}
+.join-box button{
+  width:100%; padding:14px; border:none; border-radius:12px; background:var(--accent);
+  color:#FBF2E2; font-weight:800; font-size:16px; cursor:pointer;
+}
+.err{color:var(--accent2); text-align:center; font-size:13px; margin-top:10px; min-height:16px;}
+
+.wait{text-align:center; color:var(--muted); padding:60px 0; font-size:15px; line-height:1.8;}
+.dot{display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent); margin:0 2px; animation:blink 1.4s infinite;}
+.dot:nth-child(2){animation-delay:.2s;} .dot:nth-child(3){animation-delay:.4s;}
+@keyframes blink{0%,80%,100%{opacity:.2;} 40%{opacity:1;}}
+
+.q-card{
+  background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:26px 22px;
+}
+.q-type{
+  display:inline-block; font-size:11px; color:var(--accent); border:1px solid var(--accent);
+  padding:3px 9px; border-radius:999px; margin-bottom:12px;
+}
+.q-text{font-size:21px; font-weight:800; line-height:1.4; margin-bottom:22px;}
+
+.mc-opt{
+  display:block; width:100%; text-align:left; padding:15px 16px; margin-bottom:10px;
+  border-radius:12px; border:1px solid var(--line); background:var(--panel2); color:var(--text);
+  font-size:15px; cursor:pointer; transition:.15s;
+}
+.mc-opt:hover{border-color:var(--accent);}
+.mc-opt.picked{border-color:var(--accent); background:#FBE6D3;}
+
+.ox-row{display:flex; gap:14px;}
+.ox-btn{
+  flex:1; padding:36px 0; border-radius:16px; border:1px solid var(--line); background:var(--panel2);
+  font-size:36px; font-weight:900; cursor:pointer; color:var(--text);
+}
+.ox-btn.o{color:var(--accent);} .ox-btn.x{color:var(--accent2);}
+.ox-btn.picked{border-color:currentColor; background:#FBE6D3;}
+
+.wc-area textarea{
+  width:100%; min-height:90px; padding:14px; border-radius:12px; border:1px solid var(--line);
+  background:var(--panel2); color:var(--text); font-size:15px; margin-bottom:12px; font-family:inherit; resize:vertical;
+}
+.submit-btn{
+  width:100%; padding:14px; border:none; border-radius:12px; background:var(--accent);
+  color:#FBF2E2; font-weight:800; font-size:15px; cursor:pointer;
+}
+.submit-btn:disabled{opacity:.5; cursor:not-allowed;}
+.done-msg{
+  text-align:center; color:var(--accent); font-weight:700; margin-top:16px; font-size:14px;
+}
+</style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <h1>무학고 <span>부자캠프</span></h1>
+  <div class="sub">선생님이 알려준 입장 코드를 입력하세요</div>
+  <div class="join-box">
+    <input type="text" id="codeInput" maxlength="4" inputmode="numeric" placeholder="0000">
+    <button id="joinBtn">입장하기</button>
+    <div class="err" id="errMsg"></div>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAILcmL4AoAUtw1UW9h8eXtolBXFVhiAzE",
+  authDomain: "muhak-mentimeter.firebaseapp.com",
+  databaseURL: "https://muhak-mentimeter-default-rtdb.firebaseio.com",
+  projectId: "muhak-mentimeter",
+  storageBucket: "muhak-mentimeter.firebasestorage.app",
+  messagingSenderId: "961075824863",
+  appId: "1:961075824863:web:6bc1f37482e2a9e38f816a"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let sessionCode = null;
+let respondedSlideId = null;
+
+const urlCode = '<?= joinCode ?>';
+if(urlCode){
+  document.getElementById('codeInput').value = urlCode;
+  tryJoin(urlCode);
+}
+
+document.getElementById('joinBtn').onclick = ()=> tryJoin(document.getElementById('codeInput').value.trim());
+document.getElementById('codeInput').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') tryJoin(document.getElementById('codeInput').value.trim());
+});
+
+function tryJoin(code){
+  const errEl = document.getElementById('errMsg');
+  errEl.textContent = '';
+  if(!/^\d{4}$/.test(code)){ errEl.textContent = '4자리 숫자 코드를 입력해주세요.'; return; }
+  db.ref('sessions/'+code).get().then(snap=>{
+    if(!snap.exists()){ errEl.textContent = '존재하지 않는 코드입니다. 다시 확인해주세요.'; return; }
+    sessionCode = code;
+    enterWaitRoom();
+    listenActive();
+  });
+}
+
+function enterWaitRoom(){
+  document.getElementById('card').innerHTML = `
+    <div class="wait">
+      입장했습니다<br>
+      선생님이 슬라이드를 켜기를 기다리는 중<span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>`;
+}
+
+function listenActive(){
+  db.ref('sessions/'+sessionCode+'/active').on('value', snap=>{
+    const active = snap.val();
+    if(!active) { enterWaitRoom(); return; }
+    renderQuestion(active);
+  });
+}
+
+function renderQuestion(s){
+  const typeLabel = {mc:'객관식 투표', wordcloud:'워드클라우드', ox:'OX 투표'};
+  const card = document.getElementById('card');
+  const alreadyDone = respondedSlideId === s.id;
+
+  let bodyHtml = '';
+  if(s.type === 'mc'){
+    bodyHtml = s.options.map((o,i)=>`<button class="mc-opt" data-val="${escapeAttr(o)}">${escapeHtml(o)}</button>`).join('');
+  } else if(s.type === 'ox'){
+    bodyHtml = `<div class="ox-row">
+      <button class="ox-btn o" data-val="O">O</button>
+      <button class="ox-btn x" data-val="X">X</button>
+    </div>`;
+  } else if(s.type === 'wordcloud'){
+    bodyHtml = `<div class="wc-area">
+      <textarea id="wcInput" placeholder="한 단어 또는 짧은 문장을 입력하세요" maxlength="30"></textarea>
+      <button class="submit-btn" id="wcSubmit">제출하기</button>
+    </div>`;
+  }
+
+  card.innerHTML = `
+    <div class="q-card">
+      <div class="q-type">${typeLabel[s.type]}</div>
+      <div class="q-text">${escapeHtml(s.question)}</div>
+      ${alreadyDone ? '<div class="done-msg">제출 완료! 다음 슬라이드를 기다려주세요.</div>' : bodyHtml}
+    </div>
+  `;
+
+  if(alreadyDone) return;
+
+  if(s.type === 'mc' || s.type === 'ox'){
+    card.querySelectorAll('[data-val]').forEach(btn=>{
+      btn.onclick = ()=> submitResponse(s.id, btn.dataset.val, card);
+    });
+  } else if(s.type === 'wordcloud'){
+    document.getElementById('wcSubmit').onclick = ()=>{
+      const val = document.getElementById('wcInput').value.trim();
+      if(!val) return;
+      submitResponse(s.id, val, card);
+    };
+  }
+}
+
+function submitResponse(slideId, value, card){
+  db.ref('sessions/'+sessionCode+'/responses/'+slideId).push(value);
+  respondedSlideId = slideId;
+  card.innerHTML = `<div class="q-card"><div class="done-msg">제출 완료! 다음 슬라이드를 기다려주세요.</div></div>`;
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function escapeAttr(str){ return escapeHtml(str).replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
