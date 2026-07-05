@@ -9,162 +9,195 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
-  --bg:#FBF2E2;
-  --panel:#FFFFFF;
-  --panel2:#F3E4CC;
-  --accent:#D97A42;
-  --accent2:#8C5A2B;
-  --text:#3A2A1E;
-  --muted:#9C8770;
-  --line:#E6D4B8;
+  --bg:#FBF2E2; --panel:#FFFFFF; --panel2:#F3E4CC;
+  --accent:#D97A42; --accent2:#8C5A2B; --text:#3A2A1E;
+  --muted:#9C8770; --line:#E6D4B8;
 }
 *{box-sizing:border-box;}
-body{
-  margin:0;
-  font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
-.topbar{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:18px 28px; border-bottom:1px solid var(--line);
-  background:var(--panel);
-}
-.topbar h1{font-size:18px; margin:0; font-weight:700; letter-spacing:-0.3px;}
+body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;background:var(--bg);color:var(--text);}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--line);background:var(--panel);}
+.topbar h1{font-size:17px;margin:0;font-weight:800;}
 .topbar h1 span{color:var(--accent);}
-.session-info{display:flex; align-items:center; gap:14px;}
-.code-pill{
-  background:var(--panel2); border:1px solid var(--line); border-radius:999px;
-  padding:8px 18px; font-size:15px; font-weight:600; letter-spacing:2px;
-}
-.code-pill b{color:var(--accent2); font-size:18px;}
-.qr-btn{
-  background:transparent; border:1px solid var(--line); color:var(--text);
-  border-radius:10px; padding:8px 14px; cursor:pointer; font-size:13px;
-}
-.qr-btn:hover{border-color:var(--accent);}
+.top-right{display:flex;align-items:center;gap:10px;}
+.code-pill{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:7px 16px;font-size:14px;font-weight:600;letter-spacing:2px;}
+.code-pill b{color:var(--accent);font-size:17px;}
+.icon-btn{background:transparent;border:1px solid var(--line);color:var(--text);border-radius:9px;padding:7px 13px;cursor:pointer;font-size:13px;}
+.icon-btn:hover{border-color:var(--accent);}
+.start-btn{background:var(--accent);border:none;color:#FBF2E2;border-radius:9px;padding:8px 18px;cursor:pointer;font-weight:700;font-size:13px;}
+.start-btn:hover{opacity:.9;}
+.start-btn.stop{background:#c0392b;}
+.layout{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 57px);}
 
-.layout{display:grid; grid-template-columns:320px 1fr; min-height:calc(100vh - 64px);}
-.sidebar{
-  border-right:1px solid var(--line); padding:20px; background:var(--panel);
-  overflow-y:auto;
-}
-.sidebar h2{font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin:0 0 12px;}
-.slide-list{display:flex; flex-direction:column; gap:8px; margin-bottom:20px;}
-.slide-item{
-  background:var(--panel2); border:1px solid var(--line); border-radius:10px;
-  padding:10px 12px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:space-between;
-  transition:.15s;
-}
+/* 사이드바 */
+.sidebar{border-right:1px solid var(--line);padding:18px;background:var(--panel);overflow-y:auto;}
+.sidebar h2{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:0 0 10px;}
+.stat-bar{display:flex;gap:10px;margin-bottom:16px;}
+.stat-box{flex:1;background:var(--panel2);border-radius:10px;padding:10px;text-align:center;border:1px solid var(--line);}
+.stat-box .num{font-size:22px;font-weight:800;color:var(--accent);}
+.stat-box .label{font-size:11px;color:var(--muted);margin-top:2px;}
+.slide-list{display:flex;flex-direction:column;gap:7px;margin-bottom:16px;}
+.slide-item{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 11px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:space-between;transition:.15s;}
 .slide-item:hover{border-color:var(--accent);}
-.slide-item.active{border-color:var(--accent); background:#FBE6D3;}
-.slide-item .tag{
-  font-size:10px; padding:2px 7px; border-radius:6px; background:var(--line); color:var(--muted);
-}
-.slide-item .del{color:#ff6b6b; cursor:pointer; font-size:12px; margin-left:6px;}
-
-.add-section{border-top:1px solid var(--line); padding-top:16px;}
-.type-tabs{display:flex; gap:6px; margin-bottom:10px;}
-.type-tabs button{
-  flex:1; padding:8px 0; border-radius:8px; border:1px solid var(--line); background:var(--panel2);
-  color:var(--muted); font-size:12px; cursor:pointer;
-}
-.type-tabs button.sel{border-color:var(--accent); color:var(--accent); background:#FBE6D3;}
-input[type=text], textarea{
-  width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--line);
-  background:var(--panel2); color:var(--text); font-size:14px; margin-bottom:8px; font-family:inherit;
-}
-.opt-row{display:flex; gap:6px; margin-bottom:6px;}
-.opt-row input{flex:1; margin-bottom:0;}
-.opt-row button{background:var(--line); border:none; color:var(--muted); border-radius:6px; padding:0 10px; cursor:pointer;}
-.small-btn{
-  background:transparent; border:1px dashed var(--line); color:var(--muted);
-  border-radius:8px; padding:7px; font-size:12px; cursor:pointer; width:100%; margin-bottom:10px;
-}
-.primary-btn{
-  width:100%; padding:11px; border:none; border-radius:9px; background:var(--accent);
-  color:#FBF2E2; font-weight:700; font-size:14px; cursor:pointer;
-}
+.slide-item.active{border-color:var(--accent);background:#FBE6D3;}
+.slide-item .left{display:flex;align-items:center;gap:7px;}
+.slide-item .tag{font-size:10px;padding:2px 6px;border-radius:5px;background:var(--line);color:var(--muted);}
+.slide-item .resp-badge{font-size:11px;color:var(--accent);font-weight:700;}
+.slide-item .del{color:#c0392b;cursor:pointer;font-size:11px;margin-left:4px;padding:2px 5px;}
+.add-section{border-top:1px solid var(--line);padding-top:14px;}
+.type-tabs{display:flex;gap:5px;margin-bottom:9px;}
+.type-tabs button{flex:1;padding:7px 0;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);font-size:11px;cursor:pointer;}
+.type-tabs button.sel{border-color:var(--accent);color:var(--accent);background:#FBE6D3;}
+input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:13px;margin-bottom:7px;font-family:inherit;}
+.opt-row{display:flex;gap:5px;margin-bottom:5px;}
+.opt-row input{flex:1;margin-bottom:0;}
+.opt-row button{background:var(--line);border:none;color:var(--muted);border-radius:5px;padding:0 9px;cursor:pointer;font-size:12px;}
+.small-btn{background:transparent;border:1px dashed var(--line);color:var(--muted);border-radius:7px;padding:6px;font-size:11px;cursor:pointer;width:100%;margin-bottom:9px;}
+.primary-btn{width:100%;padding:10px;border:none;border-radius:8px;background:var(--accent);color:#FBF2E2;font-weight:700;font-size:13px;cursor:pointer;}
 .primary-btn:hover{opacity:.9;}
 
-.stage{padding:32px; display:flex; flex-direction:column; align-items:center;}
-.stage-empty{margin:auto; color:var(--muted); text-align:center; font-size:15px;}
-.question-card{width:100%; max-width:780px; text-align:center; margin-bottom:28px;}
-.q-type{
-  display:inline-block; font-size:12px; color:var(--accent); border:1px solid var(--accent);
-  padding:3px 10px; border-radius:999px; margin-bottom:14px; letter-spacing:.5px;
-}
-.q-text{font-size:30px; font-weight:800; letter-spacing:-0.5px; line-height:1.4;}
-.resp-count{color:var(--muted); font-size:13px; margin-top:6px;}
-
-.results{width:100%; max-width:780px;}
-.bar-row{margin-bottom:16px;}
-.bar-label{display:flex; justify-content:space-between; font-size:14px; margin-bottom:6px;}
-.bar-track{height:38px; background:var(--panel2); border-radius:8px; overflow:hidden; border:1px solid var(--line);}
-.bar-fill{
-  height:100%; background:linear-gradient(90deg,var(--accent),#C2542A);
-  display:flex; align-items:center; justify-content:flex-end; padding-right:10px;
-  color:#FBF2E2; font-weight:700; font-size:13px; transition:width .4s ease; min-width:2%;
-}
-.ox-wrap{display:flex; gap:20px; justify-content:center;}
-.ox-box{
-  flex:1; max-width:280px; padding:34px 0; border-radius:16px; text-align:center;
-  background:var(--panel2); border:1px solid var(--line);
-}
-.ox-box .mark{font-size:48px; font-weight:900;}
+/* 메인 스테이지 */
+.stage{padding:28px;display:flex;flex-direction:column;align-items:center;}
+.stage-empty{margin:auto;color:var(--muted);text-align:center;font-size:15px;line-height:2;}
+.question-card{width:100%;max-width:720px;text-align:center;margin-bottom:24px;}
+.q-type{display:inline-block;font-size:11px;color:var(--accent);border:1px solid var(--accent);padding:3px 9px;border-radius:999px;margin-bottom:12px;}
+.q-text{font-size:26px;font-weight:800;letter-spacing:-.5px;line-height:1.4;}
+.resp-count{color:var(--muted);font-size:13px;margin-top:5px;}
+.results{width:100%;max-width:720px;}
+.bar-row{margin-bottom:14px;}
+.bar-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;}
+.bar-track{height:36px;background:var(--panel2);border-radius:7px;overflow:hidden;border:1px solid var(--line);}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#C2542A);display:flex;align-items:center;justify-content:flex-end;padding-right:10px;color:#FBF2E2;font-weight:700;font-size:13px;transition:width .4s ease;min-width:2%;}
+.ox-wrap{display:flex;gap:18px;justify-content:center;}
+.ox-box{flex:1;max-width:260px;padding:30px 0;border-radius:14px;text-align:center;background:var(--panel2);border:1px solid var(--line);}
+.ox-box .mark{font-size:44px;font-weight:900;}
 .ox-box.o .mark{color:var(--accent);}
 .ox-box.x .mark{color:var(--accent2);}
-.ox-box .cnt{font-size:22px; margin-top:8px; font-weight:700;}
+.ox-box .cnt{font-size:20px;margin-top:7px;font-weight:700;}
+.cloud{display:flex;flex-wrap:wrap;gap:12px 18px;justify-content:center;align-items:center;padding:20px;}
+.cloud-word{display:inline-block;font-weight:800;transform-origin:center bottom;animation-name:sway;animation-timing-function:ease-in-out;animation-iteration-count:infinite;}
+.cloud-word .inner{display:inline-block;transition:transform .25s ease;}
+.cloud-word:hover .inner{transform:scale(1.22);}
+@keyframes sway{0%{transform:rotate(-4deg);}50%{transform:rotate(4deg);}100%{transform:rotate(-4deg);}}
 
-.cloud{display:flex; flex-wrap:wrap; gap:12px 18px; justify-content:center; align-items:center; padding:20px;}
-.cloud-word{
-  display:inline-block;
-  font-weight:800;
-  transform-origin:center bottom;
-  animation-name:sway;
-  animation-timing-function:ease-in-out;
-  animation-iteration-count:infinite;
-}
-.cloud-word .inner{
-  display:inline-block;
-  transition:transform .25s ease;
-}
-.cloud-word:hover .inner{
-  transform:scale(1.22);
-}
-@keyframes sway{
-  0%   { transform:rotate(-4deg); }
-  50%  { transform:rotate(4deg); }
-  100% { transform:rotate(-4deg); }
-}
+/* 참여 현황 패널 */
+.progress-panel{width:100%;max-width:720px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:20px;}
+.progress-panel h3{font-size:13px;color:var(--muted);margin:0 0 12px;}
+.participant-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.p-chip{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12px;color:var(--muted);}
+.p-chip.done{background:#FBE6D3;border-color:var(--accent);color:var(--accent);font-weight:700;}
 
-.qr-modal{
-  position:fixed; inset:0; background:rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; z-index:50;
-}
+/* QR 모달 */
+.qr-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:50;}
 .qr-modal.show{display:flex;}
-.qr-box{background:#fff; padding:28px; border-radius:18px; text-align:center; border:1px solid #E6D4B8;}
-.qr-box p{color:#111; font-weight:700; margin:14px 0 0; font-size:15px;}
-.qr-box .codebig{color:#0f1115; font-size:26px; font-weight:900; letter-spacing:4px; margin-top:6px;}
-.qr-box .close-x{margin-top:16px; cursor:pointer; color:#888; font-size:13px;}
+.qr-box{background:#fff;padding:26px;border-radius:16px;text-align:center;}
+.qr-box p{color:#333;font-weight:700;margin:12px 0 0;font-size:14px;}
+.qr-box .codebig{color:#3A2A1E;font-size:24px;font-weight:900;letter-spacing:4px;margin-top:5px;}
+.qr-box .close-x{margin-top:14px;cursor:pointer;color:#888;font-size:13px;}
+.not-started{text-align:center;padding:40px;color:var(--muted);font-size:15px;line-height:2;}
+.not-started .big{font-size:36px;margin-bottom:10px;}
+
+/* 발표자 모드 */
+.presenter{
+  position:fixed; inset:0; background:#1a0f07; z-index:100;
+  display:none; flex-direction:column; align-items:center; justify-content:center;
+  padding:48px 64px;
+}
+.presenter.show{display:flex;}
+.presenter-exit{
+  position:absolute; top:20px; right:24px;
+  background:rgba(255,255,255,.12); border:none; color:#fff;
+  border-radius:10px; padding:8px 16px; font-size:13px; cursor:pointer;
+}
+.presenter-exit:hover{background:rgba(255,255,255,.22);}
+.presenter-code{
+  position:absolute; top:20px; left:24px;
+  background:rgba(255,255,255,.1); border-radius:10px; padding:8px 16px;
+  font-size:13px; color:rgba(255,255,255,.7); letter-spacing:1px;
+}
+.presenter-code b{color:#E8A23D; font-size:16px; letter-spacing:3px;}
+.presenter-resp{
+  position:absolute; bottom:24px; right:28px;
+  font-size:13px; color:rgba(255,255,255,.5);
+}
+.p-q-type{
+  display:inline-block; font-size:13px; color:#E8A23D;
+  border:1px solid #E8A23D; padding:4px 14px; border-radius:999px; margin-bottom:18px;
+}
+.p-q-text{
+  font-size:42px; font-weight:900; color:#fff; text-align:center;
+  line-height:1.3; letter-spacing:-.5px; margin-bottom:40px; word-break:keep-all;
+  max-width:900px;
+}
+.p-results{width:100%; max-width:860px;}
+.p-bar-row{margin-bottom:18px;}
+.p-bar-label{display:flex;justify-content:space-between;font-size:18px;color:#fff;margin-bottom:8px;font-weight:600;}
+.p-bar-track{height:54px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden;}
+.p-bar-fill{
+  height:100%; background:linear-gradient(90deg,#D97A42,#E8A23D);
+  display:flex; align-items:center; justify-content:flex-end; padding-right:16px;
+  color:#fff; font-weight:800; font-size:18px; transition:width .5s ease; min-width:2%;
+  border-radius:10px;
+}
+.p-ox-wrap{display:flex;gap:28px;justify-content:center;width:100%;max-width:600px;}
+.p-ox-box{
+  flex:1; padding:50px 0; border-radius:22px; text-align:center;
+  background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.15);
+}
+.p-ox-box .p-mark{font-size:72px;font-weight:900;}
+.p-ox-box.o .p-mark{color:#6ee7c4;}
+.p-ox-box.x .p-mark{color:#ff9f5a;}
+.p-ox-box .p-cnt{font-size:36px;font-weight:800;color:#fff;margin-top:10px;}
+.p-cloud{display:flex;flex-wrap:wrap;gap:14px 22px;justify-content:center;align-items:center;padding:10px;}
+.p-cloud-word{display:inline-block;font-weight:800;transform-origin:center bottom;animation-name:sway;animation-timing-function:ease-in-out;animation-iteration-count:infinite;}
+.p-cloud-word .inner{display:inline-block;transition:transform .25s ease;color:#fff;}
+.p-no-slide{color:rgba(255,255,255,.4);font-size:20px;text-align:center;}
+</style>
+.tpl-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:60;}
+.tpl-modal.show{display:flex;}
+.tpl-box{background:var(--panel);border-radius:18px;padding:26px;width:100%;max-width:420px;max-height:80vh;display:flex;flex-direction:column;gap:14px;}
+.tpl-box h3{margin:0;font-size:16px;font-weight:800;}
+.tpl-name-row{display:flex;gap:8px;}
+.tpl-name-row input{flex:1;margin-bottom:0;}
+.tpl-name-row button{white-space:nowrap;padding:9px 14px;border:none;border-radius:8px;background:var(--accent);color:#FBF2E2;font-weight:700;font-size:13px;cursor:pointer;}
+.tpl-list{overflow-y:auto;display:flex;flex-direction:column;gap:8px;flex:1;}
+.tpl-item{display:flex;align-items:center;justify-content:space-between;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 13px;}
+.tpl-item .tpl-name{font-size:14px;font-weight:600;}
+.tpl-item .tpl-cnt{font-size:12px;color:var(--muted);margin-top:2px;}
+.tpl-item-right{display:flex;gap:7px;}
+.tpl-load-btn{padding:6px 12px;border:none;border-radius:7px;background:var(--accent);color:#FBF2E2;font-size:12px;font-weight:700;cursor:pointer;}
+.tpl-del-btn{padding:6px 10px;border:none;border-radius:7px;background:var(--line);color:#c0392b;font-size:12px;cursor:pointer;}
+.tpl-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px 0;}
+.tpl-close{align-self:flex-end;background:transparent;border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:13px;color:var(--muted);}
 </style>
 </head>
 <body>
-
 <div class="topbar">
-  <h1>무학고 <span>부자캠프</span> · 발표자 화면</h1>
-  <div class="session-info">
-    <div class="code-pill" id="codePill">입장 코드 생성 중...</div>
-    <button class="qr-btn" id="qrOpenBtn">QR코드 보기</button>
+  <h1>무학고 <span>부자캠프</span> · 발표자</h1>
+  <div class="top-right">
+    <div class="code-pill" id="codePill">코드 생성 중...</div>
+    <button class="icon-btn" id="qrOpenBtn">QR보기</button>
+    <button class="icon-btn" id="presenterBtn">📺 발표자 모드</button>
+    <button class="start-btn" id="startBtn">세션 시작</button>
   </div>
 </div>
 
 <div class="layout">
   <div class="sidebar">
+    <h2>참여 현황</h2>
+    <div class="stat-bar">
+      <div class="stat-box"><div class="num" id="totalParticipants">0</div><div class="label">참여자</div></div>
+      <div class="stat-box"><div class="num" id="totalResponses">0</div><div class="label">총 응답</div></div>
+    </div>
+
     <h2>슬라이드 목록</h2>
     <div class="slide-list" id="slideList"></div>
 
     <div class="add-section">
       <h2>슬라이드 추가</h2>
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <button class="icon-btn" style="flex:1;font-size:12px;" id="saveTemplateBtn">💾 템플릿 저장</button>
+        <button class="icon-btn" style="flex:1;font-size:12px;" id="loadTemplateBtn">📂 불러오기</button>
+      </div>
       <div class="type-tabs">
         <button data-type="mc" class="sel">객관식</button>
         <button data-type="wordcloud">워드클라우드</button>
@@ -178,7 +211,12 @@ input[type=text], textarea{
   </div>
 
   <div class="stage" id="stage">
-    <div class="stage-empty">왼쪽에서 슬라이드를 만들고 클릭하면<br>여기에 표시되고 학생 화면에 송출됩니다.</div>
+    <div class="stage-empty">
+      <div style="font-size:36px;margin-bottom:12px;">👨‍👦</div>
+      슬라이드를 만들고 <b>세션 시작</b>을 누르면<br>
+      학생들이 자신의 속도로 답변할 수 있습니다.<br>
+      목록에서 슬라이드를 클릭하면 결과를 볼 수 있어요.
+    </div>
   </div>
 </div>
 
@@ -188,6 +226,29 @@ input[type=text], textarea{
     <p>학생들에게 이 QR을 보여주세요</p>
     <div class="codebig" id="codeBigText">----</div>
     <div class="close-x" id="qrCloseBtn">닫기</div>
+  </div>
+</div>
+
+<!-- 발표자 모드 오버레이 -->
+<div class="presenter" id="presenterOverlay">
+  <div class="presenter-code" id="pCode">코드 <b>----</b></div>
+  <button class="presenter-exit" id="presenterExitBtn">✕ 발표자 모드 종료</button>
+  <div id="presenterContent" style="display:flex;flex-direction:column;align-items:center;width:100%;">
+    <div class="p-no-slide">왼쪽 슬라이드 목록에서 슬라이드를 클릭하면<br>여기에 실시간으로 표시됩니다.</div>
+  </div>
+  <div class="presenter-resp" id="pRespCount"></div>
+</div>
+
+<!-- 템플릿 모달 -->
+<div class="tpl-modal" id="tplModal">
+  <div class="tpl-box">
+    <h3>📂 슬라이드 템플릿</h3>
+    <div class="tpl-name-row">
+      <input type="text" id="tplNameInput" placeholder="템플릿 이름 (예: 부자캠프 1부)" style="margin-bottom:0;">
+      <button id="tplSaveConfirmBtn">저장</button>
+    </div>
+    <div class="tpl-list" id="tplList"></div>
+    <button class="tpl-close" id="tplCloseBtn">닫기</button>
   </div>
 </div>
 
@@ -206,174 +267,337 @@ const db = firebase.database();
 
 let sessionCode = null;
 let currentType = 'mc';
-let slides = {};      // id -> slide object
+let slides = {};
 let activeSlideId = null;
-let respUnsub = null;
+let sessionStarted = false;
+let responseCounts = {};
 
-function genCode(){
-  return String(Math.floor(1000 + Math.random()*9000));
-}
+function genCode(){ return String(Math.floor(1000 + Math.random()*9000)); }
 
 function startSession(){
   sessionCode = genCode();
   document.getElementById('codePill').innerHTML = '입장 코드 <b>'+sessionCode+'</b>';
   document.getElementById('codeBigText').textContent = sessionCode;
-  db.ref('sessions/'+sessionCode).set({createdAt: Date.now(), active: null});
-  const joinUrl = location.href.replace('host_gas.html', 'join_gas.html') + '?code=' + sessionCode;
+  db.ref('sessions/'+sessionCode).set({createdAt: Date.now(), started: false});
+  const joinUrl = location.href.replace('host_gas.html','join_gas.html')+'?code='+sessionCode;
   document.getElementById('qrcode').innerHTML = '';
-  new QRCode(document.getElementById('qrcode'), {text: joinUrl, width:200, height:200});
+  new QRCode(document.getElementById('qrcode'),{text:joinUrl,width:200,height:200});
+  listenSlides();
+  listenParticipants();
 }
 startSession();
+
+// 세션 시작/종료
+const startBtn = document.getElementById('startBtn');
+startBtn.onclick = ()=>{
+  sessionStarted = !sessionStarted;
+  db.ref('sessions/'+sessionCode+'/started').set(sessionStarted);
+  startBtn.textContent = sessionStarted ? '세션 종료' : '세션 시작';
+  startBtn.className = 'start-btn' + (sessionStarted ? ' stop' : '');
+};
 
 document.getElementById('qrOpenBtn').onclick = ()=> document.getElementById('qrModal').classList.add('show');
 document.getElementById('qrCloseBtn').onclick = ()=> document.getElementById('qrModal').classList.remove('show');
 
-// --- 슬라이드 생성 폼 ---
+// 발표자 모드
+const presenterOverlay = document.getElementById('presenterOverlay');
+document.getElementById('presenterBtn').onclick = ()=>{
+  presenterOverlay.classList.add('show');
+  document.getElementById('pCode').innerHTML = '입장코드 <b>'+sessionCode+'</b>';
+  if(activeSlideId && slides[activeSlideId]) renderPresenter(slides[activeSlideId], activeSlideId);
+  presenterOverlay.requestFullscreen?.().catch(()=>{});
+};
+document.getElementById('presenterExitBtn').onclick = exitPresenter;
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') exitPresenter(); });
+function exitPresenter(){
+  presenterOverlay.classList.remove('show');
+  if(document.fullscreenElement) document.exitFullscreen?.();
+}
+
+// 슬라이드 생성 폼
 const typeTabs = document.querySelectorAll('.type-tabs button');
 typeTabs.forEach(btn=>{
-  btn.onclick = ()=>{
-    typeTabs.forEach(b=>b.classList.remove('sel'));
-    btn.classList.add('sel');
-    currentType = btn.dataset.type;
-    renderOptsArea();
-  };
+  btn.onclick = ()=>{ typeTabs.forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); currentType=btn.dataset.type; renderOptsArea(); };
 });
-
 function renderOptsArea(){
   const area = document.getElementById('optsArea');
-  const addBtn = document.getElementById('addOptBtn');
-  area.innerHTML = '';
-  if(currentType === 'mc'){
-    addBtn.style.display = 'block';
-    addOptRow(); addOptRow();
-  } else {
-    addBtn.style.display = 'none';
-  }
+  area.innerHTML='';
+  document.getElementById('addOptBtn').style.display = currentType==='mc'?'block':'none';
+  if(currentType==='mc'){ addOptRow(); addOptRow(); }
 }
 function addOptRow(val=''){
-  const area = document.getElementById('optsArea');
-  const row = document.createElement('div');
-  row.className = 'opt-row';
-  row.innerHTML = `<input type="text" class="optInput" placeholder="보기 ${area.children.length+1}" value="${val}"><button onclick="this.parentElement.remove()">삭제</button>`;
+  const area=document.getElementById('optsArea');
+  const row=document.createElement('div'); row.className='opt-row';
+  row.innerHTML=`<input type="text" class="optInput" placeholder="보기 ${area.children.length+1}" value="${val}"><button onclick="this.parentElement.remove()">삭제</button>`;
   area.appendChild(row);
 }
 document.getElementById('addOptBtn').onclick = ()=> addOptRow();
 renderOptsArea();
 
 document.getElementById('createSlideBtn').onclick = ()=>{
-  const q = document.getElementById('qInput').value.trim();
+  const q=document.getElementById('qInput').value.trim();
   if(!q){ alert('질문을 입력해주세요.'); return; }
-  let slide = {type: currentType, question: q, createdAt: Date.now()};
-  if(currentType === 'mc'){
-    const opts = [...document.querySelectorAll('.optInput')].map(i=>i.value.trim()).filter(Boolean);
-    if(opts.length < 2){ alert('보기를 2개 이상 입력해주세요.'); return; }
-    slide.options = opts;
+  let slide={type:currentType, question:q, createdAt:Date.now()};
+  if(currentType==='mc'){
+    const opts=[...document.querySelectorAll('.optInput')].map(i=>i.value.trim()).filter(Boolean);
+    if(opts.length<2){ alert('보기를 2개 이상 입력해주세요.'); return; }
+    slide.options=opts;
   }
-  const ref = db.ref('sessions/'+sessionCode+'/slides').push();
-  ref.set(slide);
-  document.getElementById('qInput').value = '';
+  db.ref('sessions/'+sessionCode+'/slides').push(slide);
+  document.getElementById('qInput').value='';
   renderOptsArea();
 };
 
-// --- 슬라이드 목록 실시간 구독 ---
-db.ref('sessions/'+sessionCode+'/slides').on('value', snap=>{
-  slides = snap.val() || {};
-  const list = document.getElementById('slideList');
-  list.innerHTML = '';
-  const typeLabel = {mc:'객관식', wordcloud:'워드클라우드', ox:'OX'};
-  Object.entries(slides).forEach(([id, s])=>{
-    const item = document.createElement('div');
-    item.className = 'slide-item' + (id===activeSlideId ? ' active':'');
-    item.innerHTML = `<span>${s.question.slice(0,16)}${s.question.length>16?'…':''}</span>
-      <span><span class="tag">${typeLabel[s.type]}</span> <span class="del" title="삭제">✕</span></span>`;
-    item.querySelector('.del').onclick = (e)=>{
-      e.stopPropagation();
-      if(confirm('이 슬라이드를 삭제할까요?')) db.ref('sessions/'+sessionCode+'/slides/'+id).remove();
-    };
-    item.onclick = ()=> activateSlide(id);
-    list.appendChild(item);
+// 슬라이드 목록 구독
+function listenSlides(){
+  db.ref('sessions/'+sessionCode+'/slides').on('value', snap=>{
+    slides = snap.val()||{};
+    renderSlideList();
   });
-});
-
-function activateSlide(id){
-  activeSlideId = id;
-  const s = slides[id];
-  db.ref('sessions/'+sessionCode+'/active').set({id, ...s});
-  // 목록 active 표시 갱신
-  document.querySelectorAll('.slide-item').forEach(el=>el.classList.remove('active'));
-  renderStageQuestion(s);
-  if(respUnsub) respUnsub();
-  db.ref('sessions/'+sessionCode+'/responses/'+id).off();
-  db.ref('sessions/'+sessionCode+'/responses/'+id).on('value', snap=>{
-    renderResults(s, snap.val() || {});
+  // 응답 수 구독
+  db.ref('sessions/'+sessionCode+'/responses').on('value', snap=>{
+    const all = snap.val()||{};
+    responseCounts={};
+    let total=0;
+    Object.entries(all).forEach(([sid, resps])=>{
+      const c=Object.keys(resps).length;
+      responseCounts[sid]=c;
+      total+=c;
+    });
+    document.getElementById('totalResponses').textContent=total;
+    renderSlideList();
+    if(activeSlideId && slides[activeSlideId]){
+      db.ref('sessions/'+sessionCode+'/responses/'+activeSlideId).get().then(s=>renderResults(slides[activeSlideId], s.val()||{}));
+    }
   });
 }
 
-function renderStageQuestion(s){
-  const typeLabel = {mc:'객관식 투표', wordcloud:'워드클라우드', ox:'OX 투표'};
-  const stage = document.getElementById('stage');
-  stage.innerHTML = `
+function renderSlideList(){
+  const typeLabel={mc:'객관식',wordcloud:'워드클라우드',ox:'OX'};
+  const list=document.getElementById('slideList');
+  list.innerHTML='';
+  Object.entries(slides).sort((a,b)=>a[1].createdAt-b[1].createdAt).forEach(([id,s])=>{
+    const item=document.createElement('div');
+    item.className='slide-item'+(id===activeSlideId?' active':'');
+    const cnt=responseCounts[id]||0;
+    item.innerHTML=`<div class="left">
+      <span class="tag">${typeLabel[s.type]}</span>
+      <span>${s.question.slice(0,14)}${s.question.length>14?'…':''}</span>
+    </div>
+    <span><span class="resp-badge">${cnt}명</span><span class="del" title="삭제">✕</span></span>`;
+    item.querySelector('.del').onclick = e=>{
+      e.stopPropagation();
+      if(confirm('삭제할까요?')) db.ref('sessions/'+sessionCode+'/slides/'+id).remove();
+    };
+    item.onclick=()=> showSlideResult(id);
+    list.appendChild(item);
+  });
+}
+
+// 참여자 구독
+function listenParticipants(){
+  db.ref('sessions/'+sessionCode+'/participants').on('value', snap=>{
+    const p=snap.val()||{};
+    document.getElementById('totalParticipants').textContent=Object.keys(p).length;
+  });
+}
+
+// 결과 보기
+function showSlideResult(id){
+  activeSlideId=id;
+  renderSlideList();
+  const s=slides[id];
+  const typeLabel={mc:'객관식 투표',wordcloud:'워드클라우드',ox:'OX 투표'};
+  const stage=document.getElementById('stage');
+  stage.innerHTML=`
     <div class="question-card">
       <div class="q-type">${typeLabel[s.type]}</div>
       <div class="q-text">${escapeHtml(s.question)}</div>
       <div class="resp-count" id="respCount">응답 0개</div>
     </div>
-    <div class="results" id="resultsArea"></div>
-  `;
+    <div class="results" id="resultsArea"></div>`;
+  db.ref('sessions/'+sessionCode+'/responses/'+id).on('value', snap=>{
+    const responses = snap.val()||{};
+    renderResults(s, responses);
+    renderPresenter(s, id, responses);
+  });
 }
 
 function renderResults(s, responses){
-  const vals = Object.values(responses);
-  document.getElementById('respCount').textContent = '응답 ' + vals.length + '개';
-  const area = document.getElementById('resultsArea');
-
-  if(s.type === 'mc'){
-    const counts = {};
-    s.options.forEach(o=> counts[o] = 0);
-    vals.forEach(v=>{ if(counts[v] !== undefined) counts[v]++; });
-    const max = Math.max(1, ...Object.values(counts));
-    area.innerHTML = s.options.map(o=>{
-      const c = counts[o];
-      const pct = Math.round((c/max)*100);
+  const vals=Object.values(responses);
+  const el=document.getElementById('respCount');
+  if(el) el.textContent='응답 '+vals.length+'개';
+  const area=document.getElementById('resultsArea');
+  if(!area) return;
+  if(s.type==='mc'){
+    const counts={};
+    s.options.forEach(o=>counts[o]=0);
+    vals.forEach(v=>{ if(counts[v]!==undefined) counts[v]++; });
+    const max=Math.max(1,...Object.values(counts));
+    area.innerHTML=s.options.map(o=>{
+      const c=counts[o], pct=Math.round((c/max)*100);
       return `<div class="bar-row">
         <div class="bar-label"><span>${escapeHtml(o)}</span><span>${c}표</span></div>
         <div class="bar-track"><div class="bar-fill" style="width:${pct}%">${c>0?c:''}</div></div>
       </div>`;
     }).join('');
-  }
-  else if(s.type === 'ox'){
-    const oCount = vals.filter(v=>v==='O').length;
-    const xCount = vals.filter(v=>v==='X').length;
-    area.innerHTML = `<div class="ox-wrap">
-      <div class="ox-box o"><div class="mark">O</div><div class="cnt">${oCount}</div></div>
-      <div class="ox-box x"><div class="mark">X</div><div class="cnt">${xCount}</div></div>
+  } else if(s.type==='ox'){
+    const o=vals.filter(v=>v==='O').length, x=vals.filter(v=>v==='X').length;
+    area.innerHTML=`<div class="ox-wrap">
+      <div class="ox-box o"><div class="mark">O</div><div class="cnt">${o}</div></div>
+      <div class="ox-box x"><div class="mark">X</div><div class="cnt">${x}</div></div>
     </div>`;
-  }
-  else if(s.type === 'wordcloud'){
-    const freq = {};
-    vals.forEach(v=>{
-      const w = String(v).trim();
-      if(!w) return;
-      freq[w] = (freq[w]||0) + 1;
-    });
-    const entries = Object.entries(freq).sort((a,b)=>b[1]-a[1]);
-    const max = Math.max(1, ...entries.map(e=>e[1]));
-    const colors = ['#D97A42','#8C5A2B','#E8A23D','#B5562E','#C97B3D'];
-    area.innerHTML = `<div class="cloud">${entries.map(([w,c],i)=>{
-      const size = 14 + (c/max)*46;
-      const color = colors[i % colors.length];
-      // 단어마다 흔들리는 속도와 시작 타이밍을 살짝 다르게 줘서 자연스럽게
-      const duration = (3 + Math.random()*2).toFixed(2);
-      const delay = (Math.random()*3).toFixed(2);
-      return `<span class="cloud-word" style="animation-duration:${duration}s; animation-delay:-${delay}s;">
-        <span class="inner" style="font-size:${size}px; color:${color}">${escapeHtml(w)}</span>
+  } else if(s.type==='wordcloud'){
+    const freq={};
+    vals.forEach(v=>{ const w=String(v).trim(); if(w) freq[w]=(freq[w]||0)+1; });
+    const entries=Object.entries(freq).sort((a,b)=>b[1]-a[1]);
+    const max=Math.max(1,...entries.map(e=>e[1]));
+    const colors=['#D97A42','#8C5A2B','#E8A23D','#B5562E','#C97B3D'];
+    area.innerHTML=`<div class="cloud">${entries.map(([w,c],i)=>{
+      const size=14+(c/max)*46;
+      const color=colors[i%colors.length];
+      const dur=(3+Math.random()*2).toFixed(2);
+      const delay=(Math.random()*3).toFixed(2);
+      return `<span class="cloud-word" style="animation-duration:${dur}s;animation-delay:-${delay}s;">
+        <span class="inner" style="font-size:${size}px;color:${color}">${escapeHtml(w)}</span>
       </span>`;
     }).join('')}</div>`;
   }
 }
 
+function renderPresenter(s, id, responses){
+  if(!responses){
+    db.ref('sessions/'+sessionCode+'/responses/'+id).get().then(snap=> renderPresenter(s, id, snap.val()||{}));
+    return;
+  }
+  const typeLabel={mc:'객관식 투표',wordcloud:'워드클라우드',ox:'OX 투표'};
+  const vals = Object.values(responses);
+  const pContent = document.getElementById('presenterContent');
+  const pResp = document.getElementById('pRespCount');
+  if(pResp) pResp.textContent = '응답 '+vals.length+'명';
+
+  let resultHtml = '';
+  if(s.type==='mc'){
+    const counts={};
+    s.options.forEach(o=>counts[o]=0);
+    vals.forEach(v=>{ if(counts[v]!==undefined) counts[v]++; });
+    const max=Math.max(1,...Object.values(counts));
+    resultHtml = `<div class="p-results">${s.options.map(o=>{
+      const c=counts[o], pct=Math.round((c/max)*100);
+      return `<div class="p-bar-row">
+        <div class="p-bar-label"><span>${escapeHtml(o)}</span><span>${c}명</span></div>
+        <div class="p-bar-track"><div class="p-bar-fill" style="width:${pct}%">${c>0?c:''}</div></div>
+      </div>`;
+    }).join('')}</div>`;
+  } else if(s.type==='ox'){
+    const o=vals.filter(v=>v==='O').length, x=vals.filter(v=>v==='X').length;
+    resultHtml = `<div class="p-ox-wrap">
+      <div class="p-ox-box o"><div class="p-mark">O</div><div class="p-cnt">${o}명</div></div>
+      <div class="p-ox-box x"><div class="p-mark">X</div><div class="p-cnt">${x}명</div></div>
+    </div>`;
+  } else if(s.type==='wordcloud'){
+    const freq={};
+    vals.forEach(v=>{ const w=String(v).trim(); if(w) freq[w]=(freq[w]||0)+1; });
+    const entries=Object.entries(freq).sort((a,b)=>b[1]-a[1]);
+    const max=Math.max(1,...entries.map(e=>e[1]));
+    const colors=['#E8A23D','#6ee7c4','#ff9f5a','#7aa2ff','#ff6b9e'];
+    resultHtml = `<div class="p-cloud">${entries.map(([w,c],i)=>{
+      const size=20+(c/max)*60;
+      const color=colors[i%colors.length];
+      const dur=(3+Math.random()*2).toFixed(2);
+      const delay=(Math.random()*3).toFixed(2);
+      return `<span class="p-cloud-word" style="animation-duration:${dur}s;animation-delay:-${delay}s;">
+        <span class="inner" style="font-size:${size}px;color:${color}">${escapeHtml(w)}</span>
+      </span>`;
+    }).join('')}</div>`;
+  }
+
+  pContent.innerHTML = `
+    <div class="p-q-type">${typeLabel[s.type]}</div>
+    <div class="p-q-text">${escapeHtml(s.question)}</div>
+    ${resultHtml}`;
+}
+
 function escapeHtml(str){
-  return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  return String(str).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+// ── 템플릿 기능 ──
+document.getElementById('saveTemplateBtn').onclick = ()=>{
+  const slideArr = Object.values(slides);
+  if(!slideArr.length){ alert('저장할 슬라이드가 없습니다.'); return; }
+  document.getElementById('tplNameInput').value = '';
+  renderTplList();
+  document.getElementById('tplModal').classList.add('show');
+};
+document.getElementById('loadTemplateBtn').onclick = ()=>{
+  document.getElementById('tplNameInput').value = '';
+  renderTplList();
+  document.getElementById('tplModal').classList.add('show');
+};
+document.getElementById('tplCloseBtn').onclick = ()=> document.getElementById('tplModal').classList.remove('show');
+
+document.getElementById('tplSaveConfirmBtn').onclick = ()=>{
+  const name = document.getElementById('tplNameInput').value.trim();
+  if(!name){ alert('템플릿 이름을 입력해주세요.'); return; }
+  const slideArr = Object.values(slides);
+  if(!slideArr.length){ alert('저장할 슬라이드가 없습니다.'); return; }
+  // 슬라이드 데이터 정리 (Firebase key 제거, createdAt 순 정렬)
+  const toSave = slideArr
+    .sort((a,b)=>a.createdAt - b.createdAt)
+    .map(({type, question, options})=> options ? {type, question, options} : {type, question});
+  db.ref('templates/'+name).set({
+    name, savedAt: Date.now(), slides: toSave
+  }).then(()=>{
+    alert(`"${name}" 템플릿으로 저장했습니다.`);
+    renderTplList();
+  });
+};
+
+function renderTplList(){
+  const list = document.getElementById('tplList');
+  list.innerHTML = '<div class="tpl-empty">불러오는 중...</div>';
+  db.ref('templates').get().then(snap=>{
+    const all = snap.val()||{};
+    const entries = Object.entries(all).sort((a,b)=>b[1].savedAt - a[1].savedAt);
+    if(!entries.length){
+      list.innerHTML = '<div class="tpl-empty">저장된 템플릿이 없습니다.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    entries.forEach(([key, tpl])=>{
+      const cnt = (tpl.slides||[]).length;
+      const date = new Date(tpl.savedAt).toLocaleDateString('ko-KR');
+      const item = document.createElement('div');
+      item.className = 'tpl-item';
+      item.innerHTML = `
+        <div>
+          <div class="tpl-name">${escapeHtml(tpl.name)}</div>
+          <div class="tpl-cnt">슬라이드 ${cnt}개 · ${date}</div>
+        </div>
+        <div class="tpl-item-right">
+          <button class="tpl-load-btn">불러오기</button>
+          <button class="tpl-del-btn">삭제</button>
+        </div>`;
+      item.querySelector('.tpl-load-btn').onclick = ()=> loadTemplate(tpl);
+      item.querySelector('.tpl-del-btn').onclick = ()=>{
+        if(confirm(`"${tpl.name}" 템플릿을 삭제할까요?`)){
+          db.ref('templates/'+key).remove().then(()=> renderTplList());
+        }
+      };
+      list.appendChild(item);
+    });
+  });
+}
+
+function loadTemplate(tpl){
+  if(!confirm(`"${tpl.name}" 템플릿을 불러올까요?\n현재 슬라이드 목록에 추가됩니다.`)) return;
+  const now = Date.now();
+  (tpl.slides||[]).forEach((s, i)=>{
+    db.ref('sessions/'+sessionCode+'/slides').push({...s, createdAt: now + i});
+  });
+  document.getElementById('tplModal').classList.remove('show');
+  alert(`"${tpl.name}" 슬라이드 ${tpl.slides.length}개를 불러왔습니다.`);
 }
 </script>
 </body>
