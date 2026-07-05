@@ -1029,6 +1029,7 @@ function playBubblePop(){
 }
 
 // ── 슬라이드 순서 재정렬 ──
+function reorderSlides(draggedId, targetId){
   const sorted = Object.entries(slides).sort((a,b)=>a[1].createdAt-b[1].createdAt).map(([id])=>id);
   const fromIdx = sorted.indexOf(draggedId);
   const toIdx   = sorted.indexOf(targetId);
