@@ -27,10 +27,18 @@ body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-
 .start-btn{background:var(--accent);border:none;color:#FBF2E2;border-radius:9px;padding:8px 18px;cursor:pointer;font-weight:700;font-size:13px;}
 .start-btn:hover{opacity:.9;}
 .start-btn.stop{background:#c0392b;}
-.layout{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 57px);}
-
-/* 사이드바 */
-.sidebar{border-right:1px solid var(--line);padding:18px;background:var(--panel);overflow-y:auto;}
+.layout{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 57px);transition:grid-template-columns .25s ease;}
+.layout.collapsed{grid-template-columns:0px 1fr;}
+.layout.collapsed .sidebar{overflow:hidden;padding:0;border:none;}
+.sidebar-toggle{
+  position:absolute; top:50%; transform:translateY(-50%);
+  right:-14px; width:28px; height:28px; border-radius:50%;
+  background:var(--panel); border:1px solid var(--line);
+  cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center;
+  z-index:10; box-shadow:0 1px 4px rgba(0,0,0,.1);
+}
+.sidebar-toggle:hover{border-color:var(--accent); color:var(--accent);}
+.sidebar{border-right:1px solid var(--line);padding:18px;background:var(--panel);overflow-y:auto;position:relative;}
 .sidebar h2{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:0 0 10px;}
 .stat-bar{display:flex;gap:10px;margin-bottom:16px;}
 .stat-box{flex:1;background:var(--panel2);border-radius:10px;padding:10px;text-align:center;border:1px solid var(--line);}
@@ -121,37 +129,37 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
   font-size:13px; color:rgba(255,255,255,.5);
 }
 .p-q-type{
-  display:inline-block; font-size:13px; color:#E8A23D;
-  border:1px solid #E8A23D; padding:4px 14px; border-radius:999px; margin-bottom:18px;
+  display:inline-block; font-size:16px; color:#E8A23D;
+  border:1px solid #E8A23D; padding:6px 20px; border-radius:999px; margin-bottom:22px;
 }
 .p-q-text{
-  font-size:42px; font-weight:900; color:#fff; text-align:center;
-  line-height:1.3; letter-spacing:-.5px; margin-bottom:40px; word-break:keep-all;
-  max-width:900px;
+  font-size:58px; font-weight:900; color:#fff; text-align:center;
+  line-height:1.25; letter-spacing:-.5px; margin-bottom:44px; word-break:keep-all;
+  max-width:1100px;
 }
-.p-results{width:100%; max-width:860px;}
-.p-bar-row{margin-bottom:18px;}
-.p-bar-label{display:flex;justify-content:space-between;font-size:18px;color:#fff;margin-bottom:8px;font-weight:600;}
-.p-bar-track{height:54px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden;}
+.p-results{width:100%; max-width:1000px;}
+.p-bar-row{margin-bottom:24px;}
+.p-bar-label{display:flex;justify-content:space-between;font-size:24px;color:#fff;margin-bottom:10px;font-weight:600;}
+.p-bar-track{height:70px;background:rgba(255,255,255,.1);border-radius:12px;overflow:hidden;}
 .p-bar-fill{
   height:100%; background:linear-gradient(90deg,#D97A42,#E8A23D);
-  display:flex; align-items:center; justify-content:flex-end; padding-right:16px;
-  color:#fff; font-weight:800; font-size:18px; transition:width .5s ease; min-width:2%;
-  border-radius:10px;
+  display:flex; align-items:center; justify-content:flex-end; padding-right:22px;
+  color:#fff; font-weight:800; font-size:24px; transition:width .5s ease; min-width:2%;
+  border-radius:12px;
 }
-.p-ox-wrap{display:flex;gap:28px;justify-content:center;width:100%;max-width:600px;}
+.p-ox-wrap{display:flex;gap:40px;justify-content:center;width:100%;max-width:800px;}
 .p-ox-box{
-  flex:1; padding:50px 0; border-radius:22px; text-align:center;
+  flex:1; padding:70px 0; border-radius:32px; text-align:center;
   background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.15);
 }
-.p-ox-box .p-mark{font-size:72px;font-weight:900;}
+.p-ox-box .p-mark{font-size:100px;font-weight:900;}
 .p-ox-box.o .p-mark{color:#6ee7c4;}
 .p-ox-box.x .p-mark{color:#ff9f5a;}
-.p-ox-box .p-cnt{font-size:36px;font-weight:800;color:#fff;margin-top:10px;}
-.p-cloud{display:flex;flex-wrap:wrap;gap:14px 22px;justify-content:center;align-items:center;padding:10px;}
+.p-ox-box .p-cnt{font-size:52px;font-weight:800;color:#fff;margin-top:14px;}
+.p-cloud{display:flex;flex-wrap:wrap;gap:18px 28px;justify-content:center;align-items:center;padding:10px;}
 .p-cloud-word{display:inline-block;font-weight:800;transform-origin:center bottom;animation-name:sway;animation-timing-function:ease-in-out;animation-iteration-count:infinite;}
 .p-cloud-word .inner{display:inline-block;transition:transform .25s ease;color:#fff;}
-.p-no-slide{color:rgba(255,255,255,.4);font-size:20px;text-align:center;}
+.p-no-slide{color:rgba(255,255,255,.4);font-size:26px;text-align:center;}
 
 /* 역할 구분 */
 .target-tabs{display:flex;gap:5px;margin-bottom:9px;}
@@ -170,8 +178,8 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
 .role-col-header.father{color:var(--father);border-color:var(--father);}
 .role-col-header.son{color:var(--son);border-color:var(--son);}
 /* 발표자 모드 역할 분리 */
-.p-role-split{display:grid;grid-template-columns:1fr 1fr;gap:24px;width:100%;max-width:860px;}
-.p-role-col-header{font-size:18px;font-weight:800;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid;}
+.p-role-split{display:grid;grid-template-columns:1fr 1fr;gap:36px;width:100%;max-width:1100px;}
+.p-role-col-header{font-size:24px;font-weight:800;margin-bottom:20px;padding-bottom:12px;border-bottom:3px solid;}
 .p-role-col-header.father{color:#6bb5e0;border-color:#6bb5e0;}
 .p-role-col-header.son{color:#7dd4a0;border-color:#7dd4a0;}
 
@@ -208,8 +216,9 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
   </div>
 </div>
 
-<div class="layout">
+<div class="layout" id="layout">
   <div class="sidebar">
+    <button class="sidebar-toggle" id="sidebarToggle" title="패널 접기">◀</button>
     <h2>참여 현황</h2>
     <div class="stat-bar">
       <div class="stat-box"><div class="num" id="totalParticipants">0</div><div class="label">참여자</div></div>
@@ -639,7 +648,44 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
-// ── 템플릿 기능 ──
+// ── 사이드바 토글 ──
+const sidebarToggle = document.getElementById('sidebarToggle');
+sidebarToggle.onclick = ()=>{
+  const layout = document.getElementById('layout');
+  const collapsed = layout.classList.toggle('collapsed');
+  sidebarToggle.textContent = collapsed ? '▶' : '◀';
+  sidebarToggle.title = collapsed ? '패널 펼치기' : '패널 접기';
+};
+
+// ── 발표자 모드 방향키 슬라이드 이동 ──
+function getSortedSlideIds(){
+  return Object.entries(slides)
+    .sort((a,b)=>a[1].createdAt - b[1].createdAt)
+    .map(([id])=>id);
+}
+
+document.addEventListener('keydown', e=>{
+  if(!presenterOverlay.classList.contains('show')) return;
+  if(e.key === 'ArrowRight' || e.key === 'ArrowDown'){
+    e.preventDefault();
+    navigatePresenter(1);
+  } else if(e.key === 'ArrowLeft' || e.key === 'ArrowUp'){
+    e.preventDefault();
+    navigatePresenter(-1);
+  } else if(e.key === 'Escape'){
+    exitPresenter();
+  }
+});
+
+function navigatePresenter(dir){
+  const ids = getSortedSlideIds();
+  if(!ids.length) return;
+  const cur = ids.indexOf(activeSlideId);
+  const next = Math.max(0, Math.min(ids.length-1, cur + dir));
+  if(ids[next] !== activeSlideId){
+    showSlideResult(ids[next]);
+  }
+}
 document.getElementById('saveTemplateBtn').onclick = ()=>{
   const slideArr = Object.values(slides);
   if(!slideArr.length){ alert('저장할 슬라이드가 없습니다.'); return; }
