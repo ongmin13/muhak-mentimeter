@@ -219,7 +219,7 @@ function startSession(){
   document.getElementById('codePill').innerHTML = '입장 코드 <b>'+sessionCode+'</b>';
   document.getElementById('codeBigText').textContent = sessionCode;
   db.ref('sessions/'+sessionCode).set({createdAt: Date.now(), active: null});
-  const joinUrl = '<?= scriptUrl ?>?page=join&code=' + sessionCode;
+  const joinUrl = location.href.replace('host_gas.html', 'join_gas.html') + '?code=' + sessionCode;
   document.getElementById('qrcode').innerHTML = '';
   new QRCode(document.getElementById('qrcode'), {text: joinUrl, width:200, height:200});
 }

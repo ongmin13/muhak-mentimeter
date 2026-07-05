@@ -106,7 +106,8 @@ const db = firebase.database();
 let sessionCode = null;
 let respondedSlideId = null;
 
-const urlCode = '<?= joinCode ?>';
+const params = new URLSearchParams(location.search);
+const urlCode = params.get('code');
 if(urlCode){
   document.getElementById('codeInput').value = urlCode;
   tryJoin(urlCode);
