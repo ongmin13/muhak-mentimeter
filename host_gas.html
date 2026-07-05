@@ -183,9 +183,23 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
 .p-role-col-header.father{color:#6bb5e0;border-color:#6bb5e0;}
 .p-role-col-header.son{color:#7dd4a0;border-color:#7dd4a0;}
 
-/* 공통 슬라이드 OX 분리 */
-.ox-split{display:flex;gap:16px;justify-content:center;}
-.ox-split .ox-box{max-width:200px;}
+/* 공통 OX 전용 발표자 레이아웃 */
+.p-ox-unified{display:flex;gap:40px;justify-content:center;width:100%;max-width:900px;}
+.p-ox-unified-box{
+  flex:1; padding:50px 0 36px; border-radius:32px; text-align:center;
+  background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.15);
+}
+.p-ox-unified-box .p-mark{font-size:100px;font-weight:900;margin-bottom:10px;}
+.p-ox-unified-box.o .p-mark{color:#6ee7c4;}
+.p-ox-unified-box.x .p-mark{color:#ff9f5a;}
+.p-ox-role-row{display:flex;justify-content:center;gap:24px;margin-top:12px;}
+.p-ox-role-chip{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:rgba(255,255,255,.1);border-radius:14px;padding:10px 22px;
+}
+.p-ox-role-chip .chip-label{font-size:15px;color:rgba(255,255,255,.6);font-weight:600;}
+.p-ox-role-chip .chip-num{font-size:32px;font-weight:800;color:#fff;}
+
 
 .tpl-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:60;}
 .tpl-modal.show{display:flex;}
@@ -573,22 +587,61 @@ function renderPresenter(s, id, responses){
   if(tgt === 'all'){
     const fVals = allEntries.filter(([,r])=>r.role==='father').map(([,r])=>r.value);
     const sVals = allEntries.filter(([,r])=>r.role==='son').map(([,r])=>r.value);
-    resultHtml = `<div class="p-role-split">
-      <div>
-        <div class="p-role-col-header father">👨 아버지 (${fVals.length}명)</div>
-        <div id="pFatherResult"></div>
-      </div>
-      <div>
-        <div class="p-role-col-header son">👦 아들 (${sVals.length}명)</div>
-        <div id="pSonResult"></div>
-      </div>
-    </div>`;
-    pContent.innerHTML = `
-      <div class="p-q-type">${typeLabel[s.type]}</div>
-      <div class="p-q-text">${escapeHtml(s.question)}</div>
-      ${resultHtml}`;
-    renderPresenterRoleResult(s, fVals, document.getElementById('pFatherResult'), 'father');
-    renderPresenterRoleResult(s, sVals, document.getElementById('pSonResult'), 'son');
+
+    // OX는 통합 레이아웃 (O/X 크게, 아버지/아들 수치를 그 아래에)
+    if(s.type==='ox'){
+      const fO=fVals.filter(v=>v==='O').length, fX=fVals.filter(v=>v==='X').length;
+      const sO=sVals.filter(v=>v==='O').length, sX=sVals.filter(v=>v==='X').length;
+      pContent.innerHTML = `
+        <div class="p-q-type">${typeLabel[s.type]}</div>
+        <div class="p-q-text">${escapeHtml(s.question)}</div>
+        <div class="p-ox-unified">
+          <div class="p-ox-unified-box o">
+            <div class="p-mark">O</div>
+            <div class="p-ox-role-row">
+              <div class="p-ox-role-chip">
+                <span class="chip-label">👨 아버지</span>
+                <span class="chip-num">${fO}명</span>
+              </div>
+              <div class="p-ox-role-chip">
+                <span class="chip-label">👦 아들</span>
+                <span class="chip-num">${sO}명</span>
+              </div>
+            </div>
+          </div>
+          <div class="p-ox-unified-box x">
+            <div class="p-mark">X</div>
+            <div class="p-ox-role-row">
+              <div class="p-ox-role-chip">
+                <span class="chip-label">👨 아버지</span>
+                <span class="chip-num">${fX}명</span>
+              </div>
+              <div class="p-ox-role-chip">
+                <span class="chip-label">👦 아들</span>
+                <span class="chip-num">${sX}명</span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    } else {
+      // 객관식·워드클라우드는 기존 좌우 분리 레이아웃
+      const resultHtml = `<div class="p-role-split">
+        <div>
+          <div class="p-role-col-header father">👨 아버지 (${fVals.length}명)</div>
+          <div id="pFatherResult"></div>
+        </div>
+        <div>
+          <div class="p-role-col-header son">👦 아들 (${sVals.length}명)</div>
+          <div id="pSonResult"></div>
+        </div>
+      </div>`;
+      pContent.innerHTML = `
+        <div class="p-q-type">${typeLabel[s.type]}</div>
+        <div class="p-q-text">${escapeHtml(s.question)}</div>
+        ${resultHtml}`;
+      renderPresenterRoleResult(s, fVals, document.getElementById('pFatherResult'), 'father');
+      renderPresenterRoleResult(s, sVals, document.getElementById('pSonResult'), 'son');
+    }
   } else {
     const vals = allEntries.map(([,r])=> typeof r === 'object' ? r.value : r);
     const roleLabel = tgt==='father' ? '👨 아버지' : '👦 아들';
