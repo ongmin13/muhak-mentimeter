@@ -11,23 +11,20 @@
   --bg:#FBF2E2; --panel:#FFFFFF; --panel2:#F3E4CC;
   --accent:#D97A42; --accent2:#8C5A2B; --text:#3A2A1E;
   --muted:#9C8770; --line:#E6D4B8;
+  --father:#4A7FA5; --son:#5A9E6F;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html{height:100%;}
 body{
   margin:0;
   font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100%;
-  display:flex;
-  align-items:flex-start;
-  justify-content:center;
-  padding:24px 16px 40px;
+  background:var(--bg); color:var(--text);
+  min-height:100%; display:flex; align-items:flex-start;
+  justify-content:center; padding:24px 16px 40px;
 }
 .card{width:100%; max-width:480px;}
 
-/* ── 입장 화면 ── */
+/* 입장 화면 */
 .join-header{text-align:center; margin-bottom:28px;}
 .join-header .emoji{font-size:52px; margin-bottom:10px;}
 h1{font-size:22px; margin:0 0 6px; font-weight:800;}
@@ -36,60 +33,72 @@ h1 span{color:var(--accent);}
 .join-box input{
   width:100%; padding:18px; font-size:28px; text-align:center;
   letter-spacing:8px; border-radius:14px; border:2px solid var(--line);
-  background:var(--panel); color:var(--text); margin-bottom:12px;
-  font-weight:700;
+  background:var(--panel); color:var(--text); margin-bottom:12px; font-weight:700;
 }
 .join-box input:focus{outline:none; border-color:var(--accent);}
 .join-box button{
   width:100%; padding:16px; border:none; border-radius:14px;
-  background:var(--accent); color:#FBF2E2; font-weight:800;
-  font-size:17px; cursor:pointer; letter-spacing:.5px;
+  background:var(--accent); color:#FBF2E2; font-weight:800; font-size:17px; cursor:pointer;
 }
 .join-box button:active{opacity:.85;}
 .err{color:#c0392b; text-align:center; font-size:13px; margin-top:10px; min-height:18px;}
 
-/* ── 대기 화면 ── */
+/* 역할 선택 화면 */
+.role-screen{text-align:center; padding:10px 0;}
+.role-title{font-size:20px; font-weight:800; margin-bottom:6px;}
+.role-sub{color:var(--muted); font-size:13px; margin-bottom:28px;}
+.role-row{display:flex; gap:14px;}
+.role-btn{
+  flex:1; padding:36px 0; border-radius:20px; border:2px solid var(--line);
+  background:var(--panel); cursor:pointer; display:flex; flex-direction:column;
+  align-items:center; gap:10px; -webkit-appearance:none; transition:.15s;
+}
+.role-btn:active{transform:scale(.97); opacity:.85;}
+.role-btn .r-emoji{font-size:52px;}
+.role-btn .r-label{font-size:18px; font-weight:800; color:var(--text);}
+.role-btn.father{border-color:var(--father);}
+.role-btn.father .r-label{color:var(--father);}
+.role-btn.son{border-color:var(--son);}
+.role-btn.son .r-label{color:var(--son);}
+
+/* 대기 화면 */
 .wait{text-align:center; padding:60px 0; font-size:16px; color:var(--muted); line-height:2.2;}
 .wait .emoji{font-size:48px; display:block; margin-bottom:12px;}
 .dot{display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent); margin:0 3px; animation:blink 1.4s infinite;}
 .dot:nth-child(2){animation-delay:.2s;} .dot:nth-child(3){animation-delay:.4s;}
 @keyframes blink{0%,80%,100%{opacity:.2;} 40%{opacity:1;}}
 
-/* ── 슬라이드 화면 ── */
-.slide-wrap{display:flex; flex-direction:column; gap:16px;}
+/* 역할 배지 */
+.role-badge{
+  display:inline-flex; align-items:center; gap:5px;
+  padding:5px 12px; border-radius:999px; font-size:12px; font-weight:700;
+  margin-bottom:14px;
+}
+.role-badge.father{background:#EBF4FB; color:var(--father); border:1px solid var(--father);}
+.role-badge.son{background:#EBF6EF; color:var(--son); border:1px solid var(--son);}
 
-/* 진행률 */
+/* 슬라이드 화면 */
+.slide-wrap{display:flex; flex-direction:column; gap:16px;}
 .progress-wrap{padding:0 2px;}
 .progress-bar-bg{height:8px; background:var(--panel2); border-radius:999px; overflow:hidden;}
 .progress-bar-fill{height:100%; background:var(--accent); border-radius:999px; transition:width .4s ease;}
 .progress-text{text-align:center; font-size:12px; color:var(--muted); margin-top:6px; font-weight:600;}
-
-/* 질문 카드 */
 .q-card{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:22px 18px;}
-.q-type{
-  display:inline-block; font-size:11px; color:var(--accent);
-  border:1px solid var(--accent); padding:3px 10px; border-radius:999px; margin-bottom:14px;
-}
+.q-type{display:inline-block; font-size:11px; color:var(--accent); border:1px solid var(--accent); padding:3px 10px; border-radius:999px; margin-bottom:10px;}
 .q-text{font-size:20px; font-weight:800; line-height:1.5; margin-bottom:20px; word-break:keep-all;}
-
-/* 객관식 */
 .mc-opt{
-  display:block; width:100%; text-align:left; padding:16px 16px;
-  margin-bottom:10px; border-radius:13px; border:2px solid var(--line);
-  background:var(--panel2); color:var(--text); font-size:16px;
-  cursor:pointer; transition:.12s; font-family:inherit; font-weight:500;
-  -webkit-appearance:none;
+  display:block; width:100%; text-align:left; padding:16px; margin-bottom:10px;
+  border-radius:13px; border:2px solid var(--line); background:var(--panel2);
+  color:var(--text); font-size:16px; cursor:pointer; font-family:inherit; font-weight:500;
+  -webkit-appearance:none; transition:.12s;
 }
 .mc-opt:last-of-type{margin-bottom:0;}
 .mc-opt:active{opacity:.8;}
 .mc-opt.picked{border-color:var(--accent); background:#FBE6D3; font-weight:700; color:var(--accent2);}
-
-/* OX */
 .ox-row{display:flex; gap:14px;}
 .ox-btn{
-  flex:1; padding:0; height:130px; border-radius:18px;
-  border:2px solid var(--line); background:var(--panel2);
-  font-size:52px; font-weight:900; cursor:pointer;
+  flex:1; height:130px; border-radius:18px; border:2px solid var(--line);
+  background:var(--panel2); font-size:52px; font-weight:900; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
   -webkit-appearance:none; transition:.12s;
 }
@@ -97,39 +106,27 @@ h1 span{color:var(--accent);}
 .ox-btn.o{color:var(--accent);}
 .ox-btn.x{color:var(--accent2);}
 .ox-btn.picked{border-color:currentColor; background:#FBE6D3; border-width:3px;}
-
-/* 워드클라우드 */
 .wc-area textarea{
   width:100%; min-height:100px; padding:14px; border-radius:13px;
   border:2px solid var(--line); background:var(--panel2); color:var(--text);
-  font-size:16px; font-family:inherit; resize:none;
-  line-height:1.6;
+  font-size:16px; font-family:inherit; resize:none; line-height:1.6;
 }
 .wc-area textarea:focus{outline:none; border-color:var(--accent);}
-
-/* 제출 완료 뱃지 */
 .answered-badge{
-  text-align:center; color:var(--accent); font-weight:700;
-  font-size:14px; padding:10px 0; background:#FBE6D3;
-  border-radius:10px; margin-top:4px;
+  text-align:center; color:var(--accent); font-weight:700; font-size:14px;
+  padding:10px 0; background:#FBE6D3; border-radius:10px; margin-top:4px;
 }
-
-/* 네비게이션 */
 .nav-row{display:flex; gap:10px;}
 .nav-btn{
   flex:1; padding:16px; border-radius:13px; border:2px solid var(--line);
-  background:var(--panel); color:var(--text); font-size:15px;
-  cursor:pointer; font-weight:700; font-family:inherit;
-  -webkit-appearance:none;
+  background:var(--panel); color:var(--text); font-size:15px; cursor:pointer;
+  font-weight:700; font-family:inherit; -webkit-appearance:none;
 }
 .nav-btn:active{opacity:.8;}
-.nav-btn.submit{
-  flex:2; background:var(--accent); border-color:var(--accent);
-  color:#FBF2E2; font-size:16px;
-}
+.nav-btn.submit{flex:2; background:var(--accent); border-color:var(--accent); color:#FBF2E2; font-size:16px;}
 .nav-btn:disabled{opacity:.35; cursor:not-allowed;}
 
-/* ── 완료 화면 ── */
+/* 완료 화면 */
 .done-screen{text-align:center; padding:60px 0;}
 .done-screen .emoji{font-size:64px; margin-bottom:16px; display:block;}
 .done-screen .msg{font-size:22px; font-weight:800; color:var(--accent); margin-bottom:8px;}
@@ -165,6 +162,7 @@ const db = firebase.database();
 
 let sessionCode = null;
 let participantId = null;
+let myRole = null; // 'father' | 'son'
 let slides = [];
 let currentIdx = 0;
 let answers = {};
@@ -184,38 +182,71 @@ function tryJoin(code){
   db.ref('sessions/'+code).get().then(snap=>{
     if(!snap.exists()){ errEl.textContent = '존재하지 않는 코드입니다.'; return; }
     sessionCode = code;
-    participantId = db.ref('sessions/'+sessionCode+'/participants').push().key;
-    db.ref('sessions/'+sessionCode+'/participants/'+participantId).set({joinedAt: Date.now()});
-    listenSession();
+    participantId = db.ref().push().key;
+    showRoleSelect();
   });
 }
 
+function showRoleSelect(){
+  document.getElementById('card').innerHTML = `
+    <div class="role-screen">
+      <div style="font-size:48px;margin-bottom:14px;">👨‍👦</div>
+      <div class="role-title">나는 누구인가요?</div>
+      <div class="role-sub">해당하는 역할을 선택해주세요</div>
+      <div class="role-row">
+        <button class="role-btn father" id="fatherBtn">
+          <span class="r-emoji">👨</span>
+          <span class="r-label">아버지</span>
+        </button>
+        <button class="role-btn son" id="sonBtn">
+          <span class="r-emoji">👦</span>
+          <span class="r-label">아들</span>
+        </button>
+      </div>
+    </div>`;
+  document.getElementById('fatherBtn').onclick = ()=> selectRole('father');
+  document.getElementById('sonBtn').onclick = ()=> selectRole('son');
+}
+
+function selectRole(role){
+  myRole = role;
+  db.ref('sessions/'+sessionCode+'/participants/'+participantId).set({
+    joinedAt: Date.now(), role
+  });
+  listenSession();
+}
+
 function listenSession(){
-  showWait('선생님이 세션을 시작하기를 기다리는 중');
+  showWait();
   db.ref('sessions/'+sessionCode+'/started').on('value', snap=>{
     if(snap.val() === true){ listenSlides(); }
-    else { showWait('선생님이 세션을 시작하기를 기다리는 중'); }
+    else { showWait(); }
   });
+}
+
+function showWait(){
+  const roleLabel = myRole === 'father' ? '아버지' : '아들';
+  const roleColor = myRole === 'father' ? 'var(--father)' : 'var(--son)';
+  document.getElementById('card').innerHTML = `
+    <div class="wait">
+      <span class="emoji">👨‍👦</span>
+      <span style="color:${roleColor};font-weight:700;">${roleLabel}</span>로 입장했습니다<br>
+      선생님이 세션을 시작하기를 기다리는 중<br>
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>`;
 }
 
 function listenSlides(){
   db.ref('sessions/'+sessionCode+'/slides').on('value', snap=>{
     const raw = snap.val()||{};
+    // 내 역할에 맞는 슬라이드만 필터링 (공통 + 내 역할)
     slides = Object.entries(raw)
       .sort((a,b)=>a[1].createdAt - b[1].createdAt)
-      .map(([id,s])=>({id,...s}));
-    if(slides.length === 0){ showWait('슬라이드를 준비 중입니다'); }
+      .map(([id,s])=>({id,...s}))
+      .filter(s=> !s.target || s.target==='all' || s.target===myRole);
+    if(slides.length === 0){ showWait(); }
     else { renderSlide(currentIdx); }
   });
-}
-
-function showWait(msg){
-  document.getElementById('card').innerHTML = `
-    <div class="wait">
-      <span class="emoji">👨‍👦</span>
-      ${msg}<br>
-      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-    </div>`;
 }
 
 function renderSlide(idx){
@@ -225,6 +256,8 @@ function renderSlide(idx){
   const typeLabel = {mc:'객관식 투표', wordcloud:'워드클라우드', ox:'OX 투표'};
   const pct = Math.round(((currentIdx+1)/slides.length)*100);
   const isLast = currentIdx === slides.length-1;
+  const roleLabel = myRole==='father' ? '👨 아버지' : '👦 아들';
+  const roleCls = myRole==='father' ? 'father' : 'son';
 
   let bodyHtml = '';
   if(s.type==='mc'){
@@ -249,6 +282,7 @@ function renderSlide(idx){
         <div class="progress-text">${currentIdx+1} / ${slides.length}</div>
       </div>
       <div class="q-card">
+        <div><span class="role-badge ${roleCls}">${roleLabel}</span></div>
         <div class="q-type">${typeLabel[s.type]}</div>
         <div class="q-text">${escapeHtml(s.question)}</div>
         ${bodyHtml}
@@ -276,7 +310,10 @@ function submitAndNext(s, isLast){
     if(val) answers[s.id] = val;
   }
   if(val !== undefined && val !== ''){
-    db.ref('sessions/'+sessionCode+'/responses/'+s.id+'/'+participantId).set(val);
+    // 역할 정보를 응답에 함께 저장
+    db.ref('sessions/'+sessionCode+'/responses/'+s.id+'/'+participantId).set({
+      value: val, role: myRole
+    });
     submitted[s.id] = true;
   }
   if(isLast){ showDone(); }
@@ -284,11 +321,12 @@ function submitAndNext(s, isLast){
 }
 
 function showDone(){
+  const roleLabel = myRole==='father' ? '아버지' : '아들';
   document.getElementById('card').innerHTML = `
     <div class="done-screen">
       <span class="emoji">🎉</span>
       <div class="msg">모든 답변 완료!</div>
-      <div class="sub2">오늘 부자캠프에 함께해줘서 고마워요<br>👨‍👦 소중한 시간이었어요</div>
+      <div class="sub2">${roleLabel}로 참여해줘서 고마워요<br>👨‍👦 소중한 시간이었어요</div>
     </div>`;
 }
 
