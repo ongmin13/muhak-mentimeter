@@ -436,6 +436,11 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
 </div>
 
 <script>
+// 유틸리티 함수 (최상단 선언)
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function escapeAttr(str){ return escapeHtml(str).replace(/"/g,'&quot;'); }
 const firebaseConfig = {
   apiKey: "AIzaSyAILcmL4AoAUtw1UW9h8eXtolBXFVhiAzE",
   authDomain: "muhak-mentimeter.firebaseapp.com",
@@ -990,10 +995,6 @@ function renderPresenterRoleResult(s, vals, container, role){
     newWords.forEach((_, i)=>{
       setTimeout(()=> playBubblePop(), i * 80);
     });
-}
-
-function escapeHtml(str){
-  return String(str).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
 // ── 버블 팝 효과음 ──
