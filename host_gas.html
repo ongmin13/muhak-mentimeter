@@ -29,16 +29,19 @@ body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-
 .start-btn.stop{background:#c0392b;}
 .layout{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 57px);transition:grid-template-columns .25s ease;}
 .layout.collapsed{grid-template-columns:0px 1fr;}
-.layout.collapsed .sidebar{overflow:hidden;padding:0;border:none;}
+.layout.collapsed .sidebar{overflow:hidden;padding:0;border:none;min-width:0;}
+.layout.collapsed .sidebar-toggle{left:0;}
+.sidebar{border-right:1px solid var(--line);padding:18px;background:var(--panel);overflow-y:auto;min-width:0;transition:padding .25s ease;}
 .sidebar-toggle{
-  position:absolute; top:50%; transform:translateY(-50%);
-  right:-14px; width:28px; height:28px; border-radius:50%;
-  background:var(--panel); border:1px solid var(--line);
-  cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center;
-  z-index:10; box-shadow:0 1px 4px rgba(0,0,0,.1);
+  position:fixed; top:50%; transform:translateY(-50%);
+  left:300px; width:22px; height:48px; border-radius:0 8px 8px 0;
+  background:var(--panel); border:1px solid var(--line); border-left:none;
+  cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center;
+  z-index:20; box-shadow:2px 0 6px rgba(0,0,0,.08); transition:left .25s ease;
+  color:var(--muted);
 }
-.sidebar-toggle:hover{border-color:var(--accent); color:var(--accent);}
-.sidebar{border-right:1px solid var(--line);padding:18px;background:var(--panel);overflow-y:auto;position:relative;}
+.sidebar-toggle:hover{background:var(--panel2); color:var(--accent);}
+.sidebar{border-right:1px solid var(--line);padding:18px;background:var(--panel);overflow-y:auto;}
 .sidebar h2{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:0 0 10px;}
 .stat-bar{display:flex;gap:10px;margin-bottom:16px;}
 .stat-box{flex:1;background:var(--panel2);border-radius:10px;padding:10px;text-align:center;border:1px solid var(--line);}
@@ -343,8 +346,8 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
 </div>
 
 <div class="layout" id="layout">
+  <button class="sidebar-toggle" id="sidebarToggle" title="패널 접기">◀</button>
   <div class="sidebar">
-    <button class="sidebar-toggle" id="sidebarToggle" title="패널 접기">◀</button>
     <h2>참여 현황</h2>
     <div class="stat-bar">
       <div class="stat-box"><div class="num" id="totalParticipants">0</div><div class="label">참여자</div></div>
@@ -1054,6 +1057,7 @@ sidebarToggle.onclick = ()=>{
   const collapsed = layout.classList.toggle('collapsed');
   sidebarToggle.textContent = collapsed ? '▶' : '◀';
   sidebarToggle.title = collapsed ? '패널 펼치기' : '패널 접기';
+  sidebarToggle.style.left = collapsed ? '0' : '300px';
 };
 
 // ── 발표자 모드 방향키 슬라이드 이동 ──
