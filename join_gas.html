@@ -127,7 +127,39 @@ h1 span{color:var(--accent);}
 .nav-btn.submit{flex:2; background:var(--accent); border-color:var(--accent); color:#FBF2E2; font-size:16px;}
 .nav-btn:disabled{opacity:.35; cursor:not-allowed;}
 
-/* 완료 화면 */
+/* 퀴즈 오버레이 */
+.quiz-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,.5);
+  display:none; align-items:center; justify-content:center;
+  z-index:200; padding:20px;
+}
+.quiz-overlay.show{display:flex;}
+.quiz-popup{
+  background:var(--panel); border-radius:20px; padding:24px 20px;
+  width:100%; max-width:480px; max-height:85vh; overflow-y:auto;
+}
+.quiz-popup .q-badge{
+  display:inline-block; font-size:11px; padding:3px 10px;
+  border-radius:999px; background:#fff3e0; color:#b34700;
+  font-weight:700; margin-bottom:12px;
+}
+.quiz-popup .q-text{font-size:20px;font-weight:800;line-height:1.5;margin-bottom:18px;word-break:keep-all;}
+.quiz-waiting{text-align:center;padding:20px 0;color:var(--muted);font-size:14px;}
+/* 정답/오답 결과 화면 */
+.quiz-result{text-align:center;padding:20px 0;}
+.quiz-result .result-icon{font-size:72px;margin-bottom:12px;}
+.quiz-result .result-text{font-size:24px;font-weight:900;margin-bottom:8px;}
+.quiz-result.correct .result-text{color:#5A9E6F;}
+.quiz-result.wrong .result-text{color:#c0392b;}
+.quiz-result .correct-answer{font-size:14px;color:var(--muted);margin-top:6px;}
+.quiz-result .correct-answer b{color:var(--text);}
+/* 애니메이션 */
+@keyframes popResult{
+  0%{transform:scale(.5);opacity:0;}
+  70%{transform:scale(1.1);}
+  100%{transform:scale(1);opacity:1;}
+}
+.quiz-result .result-icon{animation:popResult .4s ease forwards;}
 .done-screen{text-align:center; padding:60px 0;}
 .done-screen .emoji{font-size:64px; margin-bottom:16px; display:block;}
 .done-screen .msg{font-size:22px; font-weight:800; color:var(--accent); margin-bottom:8px;}
@@ -148,7 +180,15 @@ h1 span{color:var(--accent);}
   </div>
 </div>
 
+<!-- 퀴즈 오버레이 -->
+<div class="quiz-overlay" id="quizOverlay">
+  <div class="quiz-popup" id="quizPopup"></div>
+</div>
+
 <script>
+const QUIZ_TYPES = ['ox_quiz','short_quiz','image_quiz'];
+function escapeHtml(str){ return String(str).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escapeAttr(str){ return escapeHtml(str).replace(/"/g,'&quot;'); }
 const firebaseConfig = {
   apiKey: "AIzaSyAILcmL4AoAUtw1UW9h8eXtolBXFVhiAzE",
   authDomain: "muhak-mentimeter.firebaseapp.com",
@@ -223,6 +263,105 @@ function listenSession(){
     if(snap.val() === true){ listenSlides(); }
     else { showWait(); }
   });
+  listenQuizState();
+}
+
+// 슬라이드 전체 캐시 (퀴즈 팝업에서 사용)
+let slides_cache = {};
+let myQuizAnswer = null;
+let currentQuizId = null;
+
+function listenQuizState(){
+  db.ref('sessions/'+sessionCode+'/quizState').on('value', snap=>{
+    const state = snap.val()||{};
+    const qid = state.activeQuizId;
+    const revealed = !!state.revealed;
+    const overlay = document.getElementById('quizOverlay');
+
+    if(qid && slides_cache[qid]){
+      overlay.classList.add('show');
+      if(currentQuizId !== qid){
+        // 새 퀴즈 시작
+        currentQuizId = qid;
+        myQuizAnswer = null;
+        renderQuizPopup(slides_cache[qid], qid);
+      } else if(revealed && myQuizAnswer !== null){
+        // 정답 공개
+        renderQuizResult(slides_cache[qid], qid);
+      } else if(revealed && myQuizAnswer === null){
+        // 답 안 냈는데 공개됨
+        renderQuizResult(slides_cache[qid], qid, true);
+      }
+    } else if(!qid){
+      overlay.classList.remove('show');
+      currentQuizId = null;
+      myQuizAnswer = null;
+    }
+  });
+}
+
+function renderQuizPopup(s, qid){
+  const typeLabel = {ox_quiz:'OX퀴즈', short_quiz:'단답형퀴즈', image_quiz:'이미지퀴즈'};
+  const imgHtml = s.type==='image_quiz' && s.imageUrl
+    ? `<img src="${escapeHtml(s.imageUrl)}" class="quiz-image" onerror="this.style.display='none'">` : '';
+
+  let inputHtml = '';
+  if(s.type==='ox_quiz'){
+    inputHtml = `<div class="ox-row">
+      <button class="ox-btn o" data-val="O">O</button>
+      <button class="ox-btn x" data-val="X">X</button>
+    </div>`;
+  } else {
+    inputHtml = `<textarea id="quizTextInput" placeholder="답을 입력하세요" maxlength="50"
+      style="width:100%;min-height:70px;padding:12px;border-radius:11px;border:2px solid var(--line);
+      background:var(--panel2);color:var(--text);font-size:16px;font-family:inherit;resize:none;"></textarea>
+      <button class="nav-btn submit" id="quizSubmitTextBtn" style="width:100%;margin-top:10px;padding:14px;border:none;border-radius:11px;background:var(--accent);color:#FBF2E2;font-weight:800;font-size:15px;cursor:pointer;">제출하기</button>`;
+  }
+
+  const submitted = myQuizAnswer !== null;
+  document.getElementById('quizPopup').innerHTML = `
+    <div class="quiz-badge">${typeLabel[s.type]||s.type}</div>
+    ${imgHtml}
+    <div class="q-text">${escapeHtml(s.question)}</div>
+    ${submitted
+      ? `<div class="answered-badge">✓ 제출 완료 (${escapeHtml(String(myQuizAnswer))}) · 정답 발표를 기다리는 중...</div>`
+      : inputHtml}`;
+
+  if(!submitted){
+    if(s.type==='ox_quiz'){
+      document.querySelectorAll('#quizPopup [data-val]').forEach(btn=>{
+        btn.onclick = ()=>{
+          myQuizAnswer = btn.dataset.val;
+          db.ref('sessions/'+sessionCode+'/responses/'+qid+'/'+participantId).set({value:myQuizAnswer, role:myRole});
+          renderQuizPopup(s, qid);
+        };
+      });
+    } else {
+      document.getElementById('quizSubmitTextBtn').onclick = ()=>{
+        const val = document.getElementById('quizTextInput').value.trim();
+        if(!val) return;
+        myQuizAnswer = val;
+        db.ref('sessions/'+sessionCode+'/responses/'+qid+'/'+participantId).set({value:val, role:myRole});
+        renderQuizPopup(s, qid);
+      };
+    }
+  }
+}
+
+function renderQuizResult(s, qid, noAnswer=false){
+  const correct = s.answer?.trim().toLowerCase();
+  const myAns = myQuizAnswer?.trim().toLowerCase();
+  const isCorrect = !noAnswer && myAns === correct;
+  const icon = noAnswer ? '😅' : isCorrect ? '🎉' : '😢';
+  const text = noAnswer ? '시간 초과' : isCorrect ? '정답!' : '오답!';
+  const cls = noAnswer ? '' : isCorrect ? 'correct' : 'wrong';
+  document.getElementById('quizPopup').innerHTML = `
+    <div class="quiz-result ${cls}">
+      <div class="result-icon">${icon}</div>
+      <div class="result-text">${text}</div>
+      <div class="correct-answer">정답은 <b>${escapeHtml(String(s.answer))}</b> 입니다</div>
+      ${myQuizAnswer ? `<div style="font-size:13px;color:var(--muted);margin-top:6px;">내 답: ${escapeHtml(String(myQuizAnswer))}</div>` : ''}
+    </div>`
 }
 
 function showWait(){
@@ -240,10 +379,13 @@ function showWait(){
 function listenSlides(){
   db.ref('sessions/'+sessionCode+'/slides').on('value', snap=>{
     const raw = snap.val()||{};
-    // 내 역할에 맞는 슬라이드만 필터링 (공통 + 내 역할)
+    // 전체 슬라이드 캐시 (퀴즈 팝업용)
+    slides_cache = raw;
+    // 내 역할에 맞는 슬라이드만 필터링 (공통 + 내 역할, 퀴즈 제외)
     slides = Object.entries(raw)
       .sort((a,b)=>a[1].createdAt - b[1].createdAt)
       .map(([id,s])=>({id,...s}))
+      .filter(s=> !QUIZ_TYPES.includes(s.type))
       .filter(s=> !s.target || s.target==='all' || s.target===myRole);
     if(slides.length === 0){ showWait(); }
     else { renderSlide(currentIdx); }

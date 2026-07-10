@@ -80,10 +80,20 @@ body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-
 .type-quiz{background:#fff3e0 !important; color:#b34700 !important; border-color:#ffb74d !important; font-weight:600;}
 .type-quiz.sel{background:#ff8c00 !important; color:#fff !important; border-color:#ff8c00 !important;}
 .quiz-divider{
+  display:flex; align-items:center; gap:8px;
   font-size:11px; font-weight:800; color:#b34700;
-  background:#fff3e0; border:1px solid #ffb74d;
-  border-radius:6px; padding:4px 8px; margin:4px 0;
-  text-align:center;
+  margin:8px 0 5px;
+}
+.quiz-divider::before, .quiz-divider::after{
+  content:''; flex:1; height:1px; background:#ffb74d;
+}
+.target-divider{
+  display:flex; align-items:center; gap:8px;
+  font-size:11px; font-weight:800; color:var(--accent2);
+  margin:8px 0 5px;
+}
+.target-divider::before, .target-divider::after{
+  content:''; flex:1; height:1px; background:var(--line);
 }
 input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:13px;margin-bottom:7px;font-family:inherit;}
 .opt-row{display:flex;gap:5px;margin-bottom:5px;}
@@ -223,7 +233,18 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
 .p-cloud-word.pop-in .inner{animation:popIn .45s cubic-bezier(.34,1.56,.64,1) forwards;}
 .p-no-slide{color:rgba(255,255,255,.4);font-size:26px;text-align:center;}
 
-/* 퀴즈 슬라이드 */
+.quiz-slide-list{display:flex;flex-direction:column;gap:5px;}
+.quiz-slide-item{
+  background:var(--panel2); border:1px solid #ffb74d; border-radius:8px;
+  padding:8px 10px; cursor:pointer; font-size:12px; display:flex;
+  align-items:center; justify-content:space-between;
+  transition:.15s;
+}
+.quiz-slide-item:hover{background:#fff3e0;}
+.quiz-slide-item.active-quiz{background:#ff8c00;border-color:#ff8c00;color:#fff;}
+.quiz-slide-item .q-tag{font-size:10px;padding:1px 5px;border-radius:4px;background:#ffb74d;color:#fff;margin-right:5px;}
+.quiz-slide-item.active-quiz .q-tag{background:rgba(255,255,255,.3);}
+.quiz-empty{font-size:12px;color:var(--muted);padding:6px 0;}
 .quiz-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;background:#fff3cd;color:#856404;border:1px solid #ffc107;font-weight:700;margin-left:4px;}
 .reveal-btn{
   width:100%; padding:11px; border:none; border-radius:9px;
@@ -399,6 +420,19 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
       <div class="stat-box"><div class="num" id="totalResponses">0</div><div class="label">총 응답</div></div>
     </div>
 
+    <h2>퀴즈 진행 <span id="quizStatusBadge" style="font-size:10px;padding:2px 6px;border-radius:999px;background:#fff3e0;color:#b34700;font-weight:700;display:none;">진행중</span></h2>
+    <div id="quizControlPanel" style="margin-bottom:12px;">
+      <div class="quiz-slide-list" id="quizSlideList"></div>
+      <div id="activeQuizPanel" style="display:none;background:#fff3e0;border:1px solid #ffb74d;border-radius:10px;padding:10px;margin-top:8px;">
+        <div style="font-size:11px;color:#b34700;font-weight:700;margin-bottom:6px;">🎯 진행 중인 퀴즈</div>
+        <div id="activeQuizTitle" style="font-size:12px;color:var(--text);margin-bottom:8px;"></div>
+        <div style="display:flex;gap:6px;">
+          <button class="reveal-btn" id="quizRevealBtn" style="flex:2;padding:8px;font-size:12px;">정답 공개</button>
+          <button class="icon-btn" id="quizEndBtn" style="flex:1;font-size:11px;">종료</button>
+        </div>
+      </div>
+    </div>
+
     <h2>슬라이드 목록</h2>
     <div class="slide-list" id="slideList"></div>
 
@@ -409,6 +443,7 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
         <button class="icon-btn" style="flex:1;font-size:12px;" id="loadTemplateBtn">📂 불러오기</button>
       </div>
       <div id="slideTypeGrid">
+        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:5px;">📋 설문</div>
         <div class="type-row">
           <button class="type-card sel" data-type="mc">객관식</button>
           <button class="type-card" data-type="wordcloud">워드클라우드</button>
@@ -422,6 +457,7 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
         </div>
       </div>
       </div>
+      <div class="target-divider">👥 대상</div>
       <div class="target-tabs">
         <button data-target="all" class="sel">👨‍👦 공통</button>
         <button data-target="father">👨 아버지</button>
@@ -842,8 +878,8 @@ function listenSlides(){
   db.ref('sessions/'+sessionCode+'/slides').on('value', snap=>{
     slides = snap.val()||{};
     renderSlideList();
+    renderQuizSlideList();
   });
-  // 응답 수 구독
   db.ref('sessions/'+sessionCode+'/responses').on('value', snap=>{
     const all = snap.val()||{};
     responseCounts={};
@@ -855,10 +891,13 @@ function listenSlides(){
     });
     document.getElementById('totalResponses').textContent=total;
     renderSlideList();
+    renderQuizSlideList();
     if(activeSlideId && slides[activeSlideId]){
       db.ref('sessions/'+sessionCode+'/responses/'+activeSlideId).get().then(s=>renderResults(slides[activeSlideId], s.val()||{}));
     }
   });
+  // 퀴즈 상태 구독
+  listenQuizState();
 }
 
 function renderSlideList(){
@@ -1374,6 +1413,92 @@ function reorderSlides(draggedId, targetId){
   db.ref().update(updates);
 }
 
+// ── 퀴즈 진행 ──
+let activeQuizId = null;
+let quizRevealed = false;
+
+function renderQuizSlideList(){
+  const list = document.getElementById('quizSlideList');
+  const typeLabel = {ox_quiz:'OX퀴즈', short_quiz:'단답형', image_quiz:'이미지퀴즈'};
+  const quizSlides = Object.entries(slides)
+    .filter(([,s])=>QUIZ_TYPES.includes(s.type))
+    .sort((a,b)=>a[1].createdAt-b[1].createdAt);
+
+  if(!quizSlides.length){
+    list.innerHTML='<div class="quiz-empty">퀴즈 슬라이드가 없습니다</div>';
+    return;
+  }
+  list.innerHTML = quizSlides.map(([id,s])=>`
+    <div class="quiz-slide-item${id===activeQuizId?' active-quiz':''}" data-qid="${id}">
+      <span><span class="q-tag">${typeLabel[s.type]||s.type}</span>${escapeHtml(s.question.slice(0,14))}${s.question.length>14?'…':''}</span>
+      <span style="font-size:11px;opacity:.7;">${responseCounts[id]||0}명</span>
+    </div>`).join('');
+
+  list.querySelectorAll('.quiz-slide-item').forEach(el=>{
+    el.onclick = ()=> activateQuiz(el.dataset.qid);
+  });
+}
+
+function activateQuiz(id){
+  activeQuizId = id;
+  quizRevealed = false;
+  db.ref('sessions/'+sessionCode+'/quizState').set({
+    activeQuizId: id, revealed: false
+  });
+  const s = slides[id];
+  document.getElementById('activeQuizPanel').style.display='block';
+  document.getElementById('activeQuizTitle').textContent = s.question;
+  document.getElementById('quizStatusBadge').style.display='inline';
+  const revealBtn = document.getElementById('quizRevealBtn');
+  revealBtn.textContent='🎯 정답 공개';
+  revealBtn.className='reveal-btn';
+  renderQuizSlideList();
+  showSlideResult(id);
+}
+
+function listenQuizState(){
+  db.ref('sessions/'+sessionCode+'/quizState').on('value', snap=>{
+    const state = snap.val()||{};
+    activeQuizId = state.activeQuizId||null;
+    quizRevealed = !!state.revealed;
+    renderQuizSlideList();
+    if(activeQuizId){
+      document.getElementById('activeQuizPanel').style.display='block';
+      document.getElementById('quizStatusBadge').style.display='inline';
+      const revealBtn = document.getElementById('quizRevealBtn');
+      if(quizRevealed){
+        revealBtn.textContent='✅ 정답 공개됨';
+        revealBtn.className='reveal-btn done';
+        if(activeSlideId===activeQuizId && slides[activeQuizId]){
+          revealedSlides[activeQuizId]=true;
+        }
+      } else {
+        revealBtn.textContent='🎯 정답 공개';
+        revealBtn.className='reveal-btn';
+      }
+    } else {
+      document.getElementById('activeQuizPanel').style.display='none';
+      document.getElementById('quizStatusBadge').style.display='none';
+    }
+  });
+}
+
+document.getElementById('quizRevealBtn').onclick = ()=>{
+  if(!activeQuizId) return;
+  quizRevealed = !quizRevealed;
+  db.ref('sessions/'+sessionCode+'/quizState/revealed').set(quizRevealed);
+  if(quizRevealed && slides[activeQuizId]) revealedSlides[activeQuizId]=true;
+};
+
+document.getElementById('quizEndBtn').onclick = ()=>{
+  activeQuizId = null;
+  quizRevealed = false;
+  db.ref('sessions/'+sessionCode+'/quizState').set({activeQuizId:null, revealed:false});
+  document.getElementById('activeQuizPanel').style.display='none';
+  document.getElementById('quizStatusBadge').style.display='none';
+  renderQuizSlideList();
+};
+
 // ── 사이드바 토글 ──
 const sidebarToggle = document.getElementById('sidebarToggle');
 sidebarToggle.onclick = ()=>{
@@ -1421,7 +1546,13 @@ document.getElementById('tplSaveConfirmBtn').onclick = ()=>{
   // 슬라이드 데이터 정리 (Firebase key 제거, createdAt 순 정렬)
   const toSave = slideArr
     .sort((a,b)=>a.createdAt - b.createdAt)
-    .map(({type, question, options})=> options ? {type, question, options} : {type, question});
+    .map(({type, question, options, target, answer, imageUrl})=>{
+      const s = {type, question, target: target||'all'};
+      if(options) s.options = options;
+      if(answer) s.answer = answer;
+      if(imageUrl) s.imageUrl = imageUrl;
+      return s;
+    });
   db.ref('templates/'+name).set({
     name, savedAt: Date.now(), slides: toSave
   }).then(()=>{
