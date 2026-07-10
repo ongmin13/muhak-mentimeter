@@ -42,7 +42,6 @@ body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-
   color:var(--muted);
 }
 .sidebar-toggle:hover{background:var(--panel2); color:var(--accent);}
-.sidebar{border-right:1px solid var(--line);padding:18px;background:var(--panel);overflow-y:auto;}
 .sidebar h2{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:0 0 10px;}
 .stat-bar{display:flex;gap:10px;margin-bottom:16px;}
 .stat-box{flex:1;background:var(--panel2);border-radius:10px;padding:10px;text-align:center;border:1px solid var(--line);}
@@ -411,8 +410,8 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
   </div>
 </div>
 
+<button class="sidebar-toggle" id="sidebarToggle" title="패널 접기">◀</button>
 <div class="layout" id="layout">
-  <button class="sidebar-toggle" id="sidebarToggle" title="패널 접기">◀</button>
   <div class="sidebar">
     <h2>참여 현황</h2>
     <div class="stat-bar">
