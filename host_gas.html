@@ -66,6 +66,15 @@ body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-
 .type-tabs{display:flex;gap:5px;margin-bottom:9px;}
 .type-tabs button{flex:1;padding:7px 0;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);font-size:11px;cursor:pointer;}
 .type-tabs button.sel{border-color:var(--accent);color:var(--accent);background:#FBE6D3;}
+.type-card{
+  padding:8px 4px; border-radius:9px; border:1px solid var(--line);
+  background:var(--panel2); color:var(--text); font-size:11px; cursor:pointer;
+  line-height:1.5; text-align:center; font-family:inherit;
+}
+.type-card:hover{border-color:var(--accent);}
+.type-card.sel{border-color:var(--accent); color:var(--accent); background:#FBE6D3; font-weight:700;}
+.type-card.quiz{color:var(--accent2);}
+.type-card.quiz.sel{border-color:var(--accent2); color:var(--accent2); background:#fdf0e8;}
 input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:13px;margin-bottom:7px;font-family:inherit;}
 .opt-row{display:flex;gap:5px;margin-bottom:5px;}
 .opt-row input{flex:1;margin-bottom:0;}
@@ -204,7 +213,34 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
 .p-cloud-word.pop-in .inner{animation:popIn .45s cubic-bezier(.34,1.56,.64,1) forwards;}
 .p-no-slide{color:rgba(255,255,255,.4);font-size:26px;text-align:center;}
 
-/* 역할 구분 */
+/* 퀴즈 슬라이드 */
+.quiz-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;background:#fff3cd;color:#856404;border:1px solid #ffc107;font-weight:700;margin-left:4px;}
+.reveal-btn{
+  width:100%; padding:11px; border:none; border-radius:9px;
+  background:linear-gradient(135deg,#D97A42,#E8A23D);
+  color:#fff; font-weight:800; font-size:14px; cursor:pointer; margin-top:14px;
+}
+.reveal-btn:hover{opacity:.9;}
+.reveal-btn.done{background:#5A9E6F;}
+.answer-banner{
+  text-align:center; padding:14px 20px; border-radius:12px;
+  background:linear-gradient(135deg,#5A9E6F,#7dd4a0);
+  color:#fff; font-weight:800; font-size:18px; margin-top:14px;
+}
+.answer-banner.presenter{font-size:28px; padding:20px 30px; border-radius:18px; margin-top:20px;}
+.quiz-ans-btn.sel-o{border-color:var(--accent)!important;background:#FBE6D3!important;}
+.quiz-ans-btn.sel-x{border-color:var(--accent2)!important;background:#fdf0e8!important;}
+/* 퀴즈 결과: 정답 카드 */
+.answer-cards{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0;}
+.answer-card{
+  padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;
+  background:var(--panel2);border:1px solid var(--line);
+}
+.answer-card.correct{background:#d4edda;border-color:#5A9E6F;color:#2d6a3f;}
+.answer-card .role-tag{font-size:10px;color:var(--muted);margin-right:4px;}
+/* 이미지퀴즈 학생 화면 */
+.quiz-image{width:100%;max-height:240px;object-fit:contain;border-radius:10px;margin-bottom:14px;border:1px solid var(--line);}
+
 .target-tabs{display:flex;gap:5px;margin-bottom:9px;}
 .target-tabs button{flex:1;padding:6px 0;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);font-size:11px;cursor:pointer;}
 .target-tabs button.sel{font-weight:700;}
@@ -362,10 +398,19 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
         <button class="icon-btn" style="flex:1;font-size:12px;" id="saveTemplateBtn">💾 템플릿 저장</button>
         <button class="icon-btn" style="flex:1;font-size:12px;" id="loadTemplateBtn">📂 불러오기</button>
       </div>
-      <div class="type-tabs">
-        <button data-type="mc" class="sel">객관식</button>
-        <button data-type="wordcloud">워드클라우드</button>
-        <button data-type="ox">OX</button>
+      <div id="slideTypeGrid">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">슬라이드 유형</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:8px;">
+          <button class="type-card sel" data-type="mc">📊<br>객관식</button>
+          <button class="type-card" data-type="wordcloud">☁️<br>워드클라우드</button>
+          <button class="type-card" data-type="ox">⭕<br>OX</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">🏆 퀴즈</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:8px;">
+          <button class="type-card quiz" data-type="ox_quiz">⭕<br>OX퀴즈</button>
+          <button class="type-card quiz" data-type="short_quiz">✏️<br>단답형</button>
+          <button class="type-card quiz" data-type="image_quiz">🖼️<br>이미지</button>
+        </div>
       </div>
       <div class="target-tabs">
         <button data-target="all" class="sel">👨‍👦 공통</button>
@@ -373,6 +418,17 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
         <button data-target="son">👦 아들</button>
       </div>
       <input type="text" id="qInput" placeholder="질문을 입력하세요">
+      <div id="imageUrlArea" style="display:none;">
+        <input type="text" id="imageUrlInput" placeholder="이미지 URL을 붙여넣으세요 (구글드라이브, imgur 등)">
+      </div>
+      <div id="quizAnswerArea" style="display:none;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">✅ 정답</div>
+        <div id="oxAnswerBtns" style="display:none;gap:6px;margin-bottom:8px;">
+          <button class="quiz-ans-btn" data-ans="O" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);font-weight:700;font-size:16px;cursor:pointer;color:var(--accent);">O</button>
+          <button class="quiz-ans-btn" data-ans="X" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);font-weight:700;font-size:16px;cursor:pointer;color:var(--accent2);">X</button>
+        </div>
+        <input type="text" id="answerInput" placeholder="정답 입력" style="display:none;">
+      </div>
       <div id="optsArea"></div>
       <button class="small-btn" id="addOptBtn">+ 보기 추가</button>
       <button class="primary-btn" id="createSlideBtn">슬라이드 만들기</button>
@@ -682,9 +738,18 @@ function exitPresenter(){
 }
 
 // 슬라이드 생성 폼
-const typeTabs = document.querySelectorAll('.type-tabs button');
+const QUIZ_TYPES = ['ox_quiz','short_quiz','image_quiz'];
+let quizAnswer = 'O';
+let revealedSlides = {};
+
+const typeTabs = document.querySelectorAll('.type-card');
 typeTabs.forEach(btn=>{
-  btn.onclick = ()=>{ typeTabs.forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); currentType=btn.dataset.type; renderOptsArea(); };
+  btn.onclick = ()=>{
+    typeTabs.forEach(b=>b.classList.remove('sel'));
+    btn.classList.add('sel');
+    currentType=btn.dataset.type;
+    renderOptsArea();
+  };
 });
 const targetTabs = document.querySelectorAll('.target-tabs button');
 targetTabs.forEach(btn=>{
@@ -692,9 +757,35 @@ targetTabs.forEach(btn=>{
 });
 function renderOptsArea(){
   const area = document.getElementById('optsArea');
-  area.innerHTML='';
-  document.getElementById('addOptBtn').style.display = currentType==='mc'?'block':'none';
+  const addBtn = document.getElementById('addOptBtn');
+  const quizArea = document.getElementById('quizAnswerArea');
+  const oxBtns = document.getElementById('oxAnswerBtns');
+  const ansInput = document.getElementById('answerInput');
+  const imgArea = document.getElementById('imageUrlArea');
+  area.innerHTML = '';
+
+  const isQuiz = QUIZ_TYPES.includes(currentType);
+  addBtn.style.display = currentType==='mc' ? 'block' : 'none';
+  quizArea.style.display = isQuiz ? 'block' : 'none';
+  imgArea.style.display = currentType==='image_quiz' ? 'block' : 'none';
+
   if(currentType==='mc'){ addOptRow(); addOptRow(); }
+
+  if(isQuiz){
+    if(currentType==='ox_quiz'){
+      oxBtns.style.display='flex'; ansInput.style.display='none';      document.querySelectorAll('.quiz-ans-btn').forEach(b=>{
+        b.classList.remove('sel-o','sel-x');
+        if(b.dataset.ans===quizAnswer) b.classList.add(quizAnswer==='O'?'sel-o':'sel-x');
+        b.onclick=()=>{
+          quizAnswer=b.dataset.ans;
+          document.querySelectorAll('.quiz-ans-btn').forEach(x=>x.classList.remove('sel-o','sel-x'));
+          b.classList.add(quizAnswer==='O'?'sel-o':'sel-x');
+        };
+      });
+    } else {
+      oxBtns.style.display='none'; ansInput.style.display='block';
+    }
+  }
 }
 function addOptRow(val=''){
   const area=document.getElementById('optsArea');
@@ -709,13 +800,30 @@ document.getElementById('createSlideBtn').onclick = ()=>{
   const q=document.getElementById('qInput').value.trim();
   if(!q){ alert('질문을 입력해주세요.'); return; }
   let slide={type:currentType, question:q, createdAt:Date.now(), target:currentTarget};
+
   if(currentType==='mc'){
     const opts=[...document.querySelectorAll('.optInput')].map(i=>i.value.trim()).filter(Boolean);
     if(opts.length<2){ alert('보기를 2개 이상 입력해주세요.'); return; }
     slide.options=opts;
+  } else if(QUIZ_TYPES.includes(currentType)){
+    if(currentType==='ox_quiz'){
+      slide.answer = quizAnswer;
+    } else {
+      const ans = document.getElementById('answerInput').value.trim();
+      if(!ans){ alert('정답을 입력해주세요.'); return; }
+      slide.answer = ans;
+    }
+    if(currentType==='image_quiz'){
+      const url = document.getElementById('imageUrlInput').value.trim();
+      if(!url){ alert('이미지 URL을 입력해주세요.'); return; }
+      slide.imageUrl = url;
+    }
   }
+
   db.ref('sessions/'+sessionCode+'/slides').push(slide);
   document.getElementById('qInput').value='';
+  if(document.getElementById('answerInput')) document.getElementById('answerInput').value='';
+  if(document.getElementById('imageUrlInput')) document.getElementById('imageUrlInput').value='';
   renderOptsArea();
 };
 
@@ -744,7 +852,7 @@ function listenSlides(){
 }
 
 function renderSlideList(){
-  const typeLabel={mc:'객관식',wordcloud:'워드클라우드',ox:'OX'};
+  const typeLabel={mc:'객관식',wordcloud:'워드클라우드',ox:'OX',ox_quiz:'OX퀴즈',short_quiz:'단답형',image_quiz:'이미지퀴즈'};
   const targetLabel={all:'공통',father:'아버지',son:'아들'};
   const list=document.getElementById('slideList');
   list.innerHTML='';
@@ -808,38 +916,46 @@ function listenParticipants(){
 }
 
 // 결과 보기
-let activeResponseListener = null; // 기존 리스너 참조 저장
+let activeResponseListener = null;
+let revealedSlides = {};
 
 function showSlideResult(id){
   activeSlideId=id;
   renderSlideList();
   const s=slides[id];
-  const typeLabel={mc:'객관식 투표',wordcloud:'워드클라우드',ox:'OX 투표'};
+  const typeLabel={mc:'객관식 투표',wordcloud:'워드클라우드',ox:'OX 투표',ox_quiz:'🏆 OX퀴즈',short_quiz:'🏆 단답형퀴즈',image_quiz:'🏆 이미지퀴즈'};
+  const isQuiz = QUIZ_TYPES.includes(s.type);
   const stage=document.getElementById('stage');
   stage.innerHTML=`
     <div class="question-card">
-      <div class="q-type">${typeLabel[s.type]}</div>
+      <div class="q-type">${typeLabel[s.type]||s.type}</div>
       <div class="q-text">${escapeHtml(s.question)}</div>
       <div class="resp-count" id="respCount">응답 0개</div>
     </div>
-    <div class="results" id="resultsArea"></div>`;
+    <div class="results" id="resultsArea"></div>
+    ${isQuiz?`<button class="reveal-btn${revealedSlides[id]?' done':''}" id="revealBtn">${revealedSlides[id]?'✅ 정답 공개됨':'🎯 정답 공개'}</button>`:''}`;
 
-  // 기존 리스너 제거
-  if(activeResponseListener){
-    activeResponseListener.ref.off('value', activeResponseListener.fn);
+  if(isQuiz){
+    document.getElementById('revealBtn').onclick = ()=>{
+      revealedSlides[id] = !revealedSlides[id];
+      db.ref('sessions/'+sessionCode+'/slides/'+id+'/revealed').set(revealedSlides[id]);
+      const btn = document.getElementById('revealBtn');
+      if(btn){ btn.textContent = revealedSlides[id]?'✅ 정답 공개됨':'🎯 정답 공개'; btn.className='reveal-btn'+(revealedSlides[id]?' done':''); }
+      // 결과 즉시 갱신
+      if(activeResponseListener) activeResponseListener.ref.get().then(snap=>{ const r=snap.val()||{}; renderResults(s,r); if(presenterOverlay.classList.contains('show')) renderPresenter(s,id,r); });
+    };
+    db.ref('sessions/'+sessionCode+'/slides/'+id+'/revealed').on('value', snap=>{ revealedSlides[id]=!!snap.val(); });
   }
 
+  if(activeResponseListener){ activeResponseListener.ref.off('value', activeResponseListener.fn); }
   const ref = db.ref('sessions/'+sessionCode+'/responses/'+id);
   const fn = snap=>{
     const responses = snap.val()||{};
     renderResults(s, responses);
-    if(presenterOverlay.classList.contains('show')){
-      renderPresenter(s, id, responses);
-    }
+    if(presenterOverlay.classList.contains('show')) renderPresenter(s, id, responses);
   };
   ref.on('value', fn);
   activeResponseListener = {ref, fn};
-
   updatePresenterCounter(id);
 }
 
@@ -861,24 +977,26 @@ function updatePresenterCounter(id){
 }
 
 function renderResults(s, responses){
-  const allEntries = Object.entries(responses); // [pid, {value, role}]
+  const allEntries = Object.entries(responses);
   const total = allEntries.length;
   const el=document.getElementById('respCount');
   if(el) el.textContent='응답 '+total+'개';
   const area=document.getElementById('resultsArea');
   if(!area) return;
 
-  const tgt = s.target||'all';
+  // 퀴즈 타입 처리
+  if(QUIZ_TYPES.includes(s.type)){
+    area.innerHTML = renderQuizResult(s, allEntries, false);
+    return;
+  }
 
+  const tgt = s.target||'all';
   if(tgt === 'all'){
-    // 아버지/아들 응답 분리
     const fatherEntries = allEntries.filter(([pid,r])=> r.role==='father');
     const sonEntries    = allEntries.filter(([pid,r])=> r.role==='son');
     const fVals = fatherEntries.map(([,r])=>r.value);
     const sVals = sonEntries.map(([,r])=>r.value);
-
     if(s.type==='ox'){
-      // 공통 OX: 가로막대로 통합 표시
       area.innerHTML = renderOxBarHtml(fVals, sVals, false);
     } else {
       area.innerHTML = `<div class="role-split">
@@ -891,16 +1009,65 @@ function renderResults(s, responses){
           <div id="sonResult"></div>
         </div>
       </div>`;
-      const fHtml = renderRoleResult(s, fVals, 'father');
-      const sHtml = renderRoleResult(s, sVals, 'son');
-      document.getElementById('fatherResult').innerHTML = fHtml;
-      document.getElementById('sonResult').innerHTML = sHtml;
+      document.getElementById('fatherResult').innerHTML = renderRoleResult(s, fVals, 'father');
+      document.getElementById('sonResult').innerHTML = renderRoleResult(s, sVals, 'son');
     }
   } else {
-    // 단일 역할 슬라이드는 기존 방식
     const vals = allEntries.map(([,r])=> typeof r === 'object' ? r.value : r);
     area.innerHTML = renderRoleResult(s, vals, tgt);
   }
+}
+
+// 퀴즈 결과 렌더링
+function renderQuizResult(s, allEntries, isPresenter){
+  const revealed = !!revealedSlides[activeSlideId];
+  const roleLabel = {father:'👨', son:'👦'};
+  const vals = allEntries.map(([pid,r])=>({
+    pid, value: typeof r==='object'?r.value:r, role: typeof r==='object'?r.role:(participantsData[pid]?.role||'')
+  }));
+
+  if(s.type==='ox_quiz'){
+    const oVals = vals.filter(v=>v.value==='O');
+    const xVals = vals.filter(v=>v.value==='X');
+    const correct = revealed ? (s.answer==='O'?oVals:xVals).length : null;
+    const total = vals.length;
+    const p = isPresenter;
+    const barWrap = p ? 'p-ox-bar-wrap' : 'ox-bar-wrap';
+    const boxCls = p ? 'p-ox-bar-row' : 'ox-bar-row';
+    const markCls = p ? 'p-ox-bar-mark' : 'ox-bar-mark';
+    const trackCls = p ? 'p-ox-bar-total-track' : 'ox-bar-total-track';
+    const fillCls = p ? 'p-ox-bar-total-fill' : 'ox-bar-total-fill';
+    const cntCls = p ? 'p-ox-bar-total-cnt' : 'ox-bar-total-cnt';
+    const max = Math.max(1, oVals.length, xVals.length);
+    const mkRow = (mark, cnt) => {
+      const pct = Math.round((cnt/max)*100);
+      const isAns = revealed && s.answer===mark;
+      return `<div class="${boxCls}" style="${isAns?'border:2px solid #5A9E6F;':''}">\
+<div class="${p?'p-ox-bar-top':'ox-bar-top'}">\
+<div class="${markCls} ${mark.toLowerCase()}">${mark}${isAns?' ✅':''}</div>\
+<div class="${trackCls}"><div class="${fillCls} ${mark.toLowerCase()}" style="width:${pct}%">${cnt>0?cnt+'명':''}</div></div>\
+<div class="${cntCls}">${cnt}명</div></div></div>`;
+    };
+    let html = `<div class="${barWrap}">${mkRow('O',oVals.length)}${mkRow('X',xVals.length)}</div>`;
+    if(revealed) html += `<div class="answer-banner${p?' presenter':''}">✅ 정답: ${s.answer} &nbsp;·&nbsp; 정답자 ${correct}명 / ${total}명</div>`;
+    return html;
+  }
+
+  // short_quiz / image_quiz
+  const imgHtml = (s.type==='image_quiz' && s.imageUrl) ? `<img src="${escapeHtml(s.imageUrl)}" class="quiz-image" onerror="this.style.display='none'">` : '';
+  let cardsHtml = '';
+  if(vals.length===0){
+    cardsHtml = '<div style="color:var(--muted);font-size:13px;">아직 응답 없음</div>';
+  } else {
+    const correct = s.answer?.trim().toLowerCase();
+    cardsHtml = `<div class="answer-cards">${vals.map(v=>{
+      const isCorrect = revealed && v.value.trim().toLowerCase()===correct;
+      return `<div class="answer-card${isCorrect?' correct':''}"><span class="role-tag">${roleLabel[v.role]||''}</span>${escapeHtml(v.value)}</div>`;
+    }).join('')}</div>`;
+  }
+  const correctCount = revealed ? vals.filter(v=>v.value.trim().toLowerCase()===s.answer?.trim().toLowerCase()).length : 0;
+  const answerBanner = revealed ? `<div class="answer-banner${isPresenter?' presenter':''}">✅ 정답: ${escapeHtml(s.answer)} &nbsp;·&nbsp; 정답자 ${correctCount}명 / ${vals.length}명</div>` : '';
+  return `${imgHtml}${cardsHtml}${answerBanner}`;
 }
 
 // OX 가로막대 HTML 생성 (일반/발표자 공용)
@@ -1021,12 +1188,24 @@ function renderPresenter(s, id, responses){
     db.ref('sessions/'+sessionCode+'/responses/'+id).get().then(snap=> renderPresenter(s, id, snap.val()||{}));
     return;
   }
-  const typeLabel={mc:'객관식 투표',wordcloud:'워드클라우드',ox:'OX 투표'};
+  const typeLabel={mc:'객관식 투표',wordcloud:'워드클라우드',ox:'OX 투표',ox_quiz:'🏆 OX퀴즈',short_quiz:'🏆 단답형퀴즈',image_quiz:'🏆 이미지퀴즈'};
   const allEntries = Object.entries(responses);
   const total = allEntries.length;
   const pContent = document.getElementById('presenterContent');
   const pResp = document.getElementById('pRespCount');
   if(pResp) pResp.textContent = '응답 '+total+'명';
+
+  // 퀴즈 타입 처리
+  if(QUIZ_TYPES.includes(s.type)){
+    const imgHtml = (s.type==='image_quiz' && s.imageUrl)
+      ? `<img src="${escapeHtml(s.imageUrl)}" style="max-width:400px;max-height:280px;object-fit:contain;border-radius:14px;margin-bottom:20px;">` : '';
+    pContent.innerHTML = `
+      <div class="p-q-type">${typeLabel[s.type]}</div>
+      <div class="p-q-text">${escapeHtml(s.question)}</div>
+      ${imgHtml}
+      <div id="pQuizResult" style="width:100%;max-width:900px;">${renderQuizResult(s, allEntries, true)}</div>`;
+    return;
+  }
 
   const tgt = s.target||'all';
 
