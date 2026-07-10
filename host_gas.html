@@ -161,6 +161,9 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
   display:none; flex-direction:column; align-items:center; justify-content:flex-start;
   padding:80px 64px 48px;
   overflow-y:auto;
+  font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  word-break:keep-all;
 }
 .presenter.show{display:flex;}
 .presenter-slide-counter{
@@ -1308,11 +1311,11 @@ function renderPresenter(s, id, responses){
   } else {
     const vals = allEntries.map(([,r])=> typeof r === 'object' ? r.value : r);
     const roleLabel = tgt==='father' ? '👨 아버지' : '👦 아들';
+    const resultHtml = renderPresenterRoleResult(s, vals, tgt);
     pContent.innerHTML = `
       <div class="p-q-type">${typeLabel[s.type]} · ${roleLabel}</div>
       <div class="p-q-text">${escapeHtml(s.question)}</div>
-      <div id="pSingleResult" class="p-results"></div>`;
-    renderPresenterRoleResult(s, vals, document.getElementById('pSingleResult'), tgt);
+      <div class="p-results">${resultHtml}</div>`;
   }
 }
 
