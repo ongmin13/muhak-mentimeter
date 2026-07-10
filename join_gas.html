@@ -112,6 +112,7 @@ h1 span{color:var(--accent);}
   font-size:16px; font-family:inherit; resize:none; line-height:1.6;
 }
 .wc-area textarea:focus{outline:none; border-color:var(--accent);}
+.quiz-image{width:100%;max-height:220px;object-fit:contain;border-radius:12px;margin-bottom:12px;border:1px solid var(--line);}
 .answered-badge{
   text-align:center; color:var(--accent); font-weight:700; font-size:14px;
   padding:10px 0; background:#FBE6D3; border-radius:10px; margin-top:4px;
@@ -253,7 +254,7 @@ function renderSlide(idx){
   if(!slides.length) return;
   currentIdx = Math.max(0, Math.min(idx, slides.length-1));
   const s = slides[currentIdx];
-  const typeLabel = {mc:'객관식 투표', wordcloud:'워드클라우드', ox:'OX 투표'};
+  const typeLabel = {mc:'객관식 투표', wordcloud:'워드클라우드', ox:'OX 투표', ox_quiz:'🏆 OX퀴즈', short_quiz:'🏆 단답형퀴즈', image_quiz:'🏆 이미지퀴즈'};
   const pct = Math.round(((currentIdx+1)/slides.length)*100);
   const isLast = currentIdx === slides.length-1;
   const roleLabel = myRole==='father' ? '👨 아버지' : '👦 아들';
@@ -269,9 +270,24 @@ function renderSlide(idx){
       <button class="ox-btn o${answers[s.id]==='O'?' picked':''}" data-val="O">O</button>
       <button class="ox-btn x${answers[s.id]==='X'?' picked':''}" data-val="X">X</button>
     </div>`;
+  } else if(s.type==='ox_quiz'){
+    bodyHtml = `<div style="margin-bottom:8px;font-size:12px;color:var(--muted);">O 또는 X를 선택하세요</div>
+    <div class="ox-row">
+      <button class="ox-btn o${answers[s.id]==='O'?' picked':''}" data-val="O">O</button>
+      <button class="ox-btn x${answers[s.id]==='X'?' picked':''}" data-val="X">X</button>
+    </div>`;
   } else if(s.type==='wordcloud'){
     bodyHtml = `<div class="wc-area">
       <textarea id="wcInput" placeholder="한 단어 또는 짧은 문장을 입력하세요" maxlength="30">${answers[s.id]||''}</textarea>
+    </div>`;
+  } else if(s.type==='short_quiz'){
+    bodyHtml = `<div class="wc-area">
+      <textarea id="shortInput" placeholder="답을 입력하세요" maxlength="50" style="min-height:70px;">${answers[s.id]||''}</textarea>
+    </div>`;
+  } else if(s.type==='image_quiz'){
+    const imgHtml = s.imageUrl ? `<img src="${escapeHtml(s.imageUrl)}" class="quiz-image" onerror="this.style.display='none'">` : '';
+    bodyHtml = `${imgHtml}<div class="wc-area">
+      <textarea id="imageInput" placeholder="답을 입력하세요" maxlength="50" style="min-height:70px;">${answers[s.id]||''}</textarea>
     </div>`;
   }
 
@@ -283,7 +299,7 @@ function renderSlide(idx){
       </div>
       <div class="q-card">
         <div><span class="role-badge ${roleCls}">${roleLabel}</span></div>
-        <div class="q-type">${typeLabel[s.type]}</div>
+        <div class="q-type">${typeLabel[s.type]||s.type}</div>
         <div class="q-text">${escapeHtml(s.question)}</div>
         ${bodyHtml}
         ${submitted[s.id] ? '<div class="answered-badge">✓ 제출 완료</div>' : ''}
@@ -294,7 +310,7 @@ function renderSlide(idx){
       </div>
     </div>`;
 
-  if(s.type==='mc'||s.type==='ox'){
+  if(s.type==='mc'||s.type==='ox'||s.type==='ox_quiz'){
     document.querySelectorAll('[data-val]').forEach(btn=>{
       btn.onclick = ()=>{ answers[s.id]=btn.dataset.val; renderSlide(currentIdx); };
     });
@@ -308,9 +324,14 @@ function submitAndNext(s, isLast){
   if(s.type==='wordcloud'){
     val = document.getElementById('wcInput')?.value.trim();
     if(val) answers[s.id] = val;
+  } else if(s.type==='short_quiz'){
+    val = document.getElementById('shortInput')?.value.trim();
+    if(val) answers[s.id] = val;
+  } else if(s.type==='image_quiz'){
+    val = document.getElementById('imageInput')?.value.trim();
+    if(val) answers[s.id] = val;
   }
   if(val !== undefined && val !== ''){
-    // 역할 정보를 응답에 함께 저장
     db.ref('sessions/'+sessionCode+'/responses/'+s.id+'/'+participantId).set({
       value: val, role: myRole
     });
