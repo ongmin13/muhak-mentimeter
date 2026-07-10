@@ -69,13 +69,22 @@ body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-
 .type-card{
   padding:7px 4px; border-radius:8px; border:1px solid var(--line);
   background:var(--panel2); color:var(--text); font-size:11px; cursor:pointer;
-  text-align:center; font-family:inherit; white-space:nowrap; overflow:hidden;
-  text-overflow:ellipsis;
+  text-align:center; font-family:inherit;
 }
 .type-card:hover{border-color:var(--accent);}
 .type-card.sel{border-color:var(--accent); color:var(--accent); background:#FBE6D3; font-weight:700;}
 .type-card.quiz{color:var(--accent2);}
 .type-card.quiz.sel{border-color:var(--accent2); color:var(--accent2); background:#fdf0e8;}
+.type-row{display:flex; gap:4px; margin-bottom:4px;}
+.type-row .type-card{flex:1;}
+.type-quiz{background:#fff3e0 !important; color:#b34700 !important; border-color:#ffb74d !important; font-weight:600;}
+.type-quiz.sel{background:#ff8c00 !important; color:#fff !important; border-color:#ff8c00 !important;}
+.quiz-divider{
+  font-size:11px; font-weight:800; color:#b34700;
+  background:#fff3e0; border:1px solid #ffb74d;
+  border-radius:6px; padding:4px 8px; margin:4px 0;
+  text-align:center;
+}
 input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:13px;margin-bottom:7px;font-family:inherit;}
 .opt-row{display:flex;gap:5px;margin-bottom:5px;}
 .opt-row input{flex:1;margin-bottom:0;}
@@ -400,17 +409,18 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
         <button class="icon-btn" style="flex:1;font-size:12px;" id="loadTemplateBtn">📂 불러오기</button>
       </div>
       <div id="slideTypeGrid">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:4px;">
-          <button class="type-card sel" data-type="mc">📊 객관식</button>
-          <button class="type-card" data-type="wordcloud">☁️ 워드</button>
-          <button class="type-card" data-type="ox">⭕ OX</button>
+        <div class="type-row">
+          <button class="type-card sel" data-type="mc">객관식</button>
+          <button class="type-card" data-type="wordcloud">워드클라우드</button>
+          <button class="type-card" data-type="ox">OX</button>
         </div>
-        <div style="font-size:10px;color:var(--accent2);font-weight:700;margin:4px 0;padding:3px 6px;background:#fdf0e8;border-radius:6px;display:flex;align-items:center;gap:4px;">🏆 퀴즈 유형</div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px;">
-          <button class="type-card quiz" data-type="ox_quiz">⭕ OX퀴즈</button>
-          <button class="type-card quiz" data-type="short_quiz">✏️ 단답형</button>
-          <button class="type-card quiz" data-type="image_quiz">🖼️ 이미지</button>
+        <div class="quiz-divider">🏆 퀴즈</div>
+        <div class="type-row">
+          <button class="type-card type-quiz" data-type="ox_quiz">OX퀴즈</button>
+          <button class="type-card type-quiz" data-type="short_quiz">단답형</button>
+          <button class="type-card type-quiz" data-type="image_quiz">이미지퀴즈</button>
         </div>
+      </div>
       </div>
       <div class="target-tabs">
         <button data-target="all" class="sel">👨‍👦 공통</button>
