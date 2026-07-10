@@ -66,6 +66,15 @@ body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-
 .type-tabs{display:flex;gap:5px;margin-bottom:9px;}
 .type-tabs button{flex:1;padding:7px 0;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);font-size:11px;cursor:pointer;}
 .type-tabs button.sel{border-color:var(--accent);color:var(--accent);background:#FBE6D3;}
+.type-card{
+  padding:8px 4px; border-radius:9px; border:1px solid var(--line);
+  background:var(--panel2); color:var(--text); font-size:11px; cursor:pointer;
+  line-height:1.5; text-align:center; font-family:inherit;
+}
+.type-card:hover{border-color:var(--accent);}
+.type-card.sel{border-color:var(--accent); color:var(--accent); background:#FBE6D3; font-weight:700;}
+.type-card.quiz{color:var(--accent2);}
+.type-card.quiz.sel{border-color:var(--accent2); color:var(--accent2); background:#fdf0e8;}
 input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:13px;margin-bottom:7px;font-family:inherit;}
 .opt-row{display:flex;gap:5px;margin-bottom:5px;}
 .opt-row input{flex:1;margin-bottom:0;}
@@ -389,15 +398,19 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
         <button class="icon-btn" style="flex:1;font-size:12px;" id="saveTemplateBtn">💾 템플릿 저장</button>
         <button class="icon-btn" style="flex:1;font-size:12px;" id="loadTemplateBtn">📂 불러오기</button>
       </div>
-      <div class="type-tabs">
-        <button data-type="mc" class="sel">객관식</button>
-        <button data-type="wordcloud">워드클라우드</button>
-        <button data-type="ox">OX</button>
-      </div>
-      <div class="type-tabs" style="margin-top:5px;">
-        <button data-type="ox_quiz">🏆 OX퀴즈</button>
-        <button data-type="short_quiz">🏆 단답형</button>
-        <button data-type="image_quiz">🏆 이미지퀴즈</button>
+      <div id="slideTypeGrid">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">슬라이드 유형</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:8px;">
+          <button class="type-card sel" data-type="mc">📊<br>객관식</button>
+          <button class="type-card" data-type="wordcloud">☁️<br>워드클라우드</button>
+          <button class="type-card" data-type="ox">⭕<br>OX</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">🏆 퀴즈</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:8px;">
+          <button class="type-card quiz" data-type="ox_quiz">⭕<br>OX퀴즈</button>
+          <button class="type-card quiz" data-type="short_quiz">✏️<br>단답형</button>
+          <button class="type-card quiz" data-type="image_quiz">🖼️<br>이미지</button>
+        </div>
       </div>
       <div class="target-tabs">
         <button data-target="all" class="sel">👨‍👦 공통</button>
@@ -410,7 +423,7 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
       </div>
       <div id="quizAnswerArea" style="display:none;">
         <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">✅ 정답</div>
-        <div id="oxAnswerBtns" style="display:none;display:flex;gap:6px;margin-bottom:8px;">
+        <div id="oxAnswerBtns" style="display:none;gap:6px;margin-bottom:8px;">
           <button class="quiz-ans-btn" data-ans="O" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);font-weight:700;font-size:16px;cursor:pointer;color:var(--accent);">O</button>
           <button class="quiz-ans-btn" data-ans="X" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);font-weight:700;font-size:16px;cursor:pointer;color:var(--accent2);">X</button>
         </div>
@@ -726,10 +739,10 @@ function exitPresenter(){
 
 // 슬라이드 생성 폼
 const QUIZ_TYPES = ['ox_quiz','short_quiz','image_quiz'];
-let quizAnswer = 'O'; // OX퀴즈 기본 정답
-let revealedSlides = {}; // slideId -> true
+let quizAnswer = 'O';
+let revealedSlides = {};
 
-const typeTabs = document.querySelectorAll('.type-tabs button');
+const typeTabs = document.querySelectorAll('.type-card');
 typeTabs.forEach(btn=>{
   btn.onclick = ()=>{
     typeTabs.forEach(b=>b.classList.remove('sel'));
@@ -760,8 +773,7 @@ function renderOptsArea(){
 
   if(isQuiz){
     if(currentType==='ox_quiz'){
-      oxBtns.style.display='flex'; ansInput.style.display='none';
-      document.querySelectorAll('.quiz-ans-btn').forEach(b=>{
+      oxBtns.style.display='flex'; ansInput.style.display='none';      document.querySelectorAll('.quiz-ans-btn').forEach(b=>{
         b.classList.remove('sel-o','sel-x');
         if(b.dataset.ans===quizAnswer) b.classList.add(quizAnswer==='O'?'sel-o':'sel-x');
         b.onclick=()=>{
