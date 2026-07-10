@@ -459,6 +459,44 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
 .tpl-del-btn{padding:6px 10px;border:none;border-radius:7px;background:var(--line);color:#c0392b;font-size:12px;cursor:pointer;}
 .tpl-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px 0;}
 .tpl-close{align-self:flex-end;background:transparent;border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:13px;color:var(--muted);}
+/* 가사 퀴즈 */
+.lyric-char{
+  display:inline; cursor:pointer; border-radius:4px;
+  transition:background .1s;
+}
+.lyric-char:hover{ background:rgba(217,122,66,.18); }
+.lyric-char.lq-hidden{
+  background:var(--accent2); color:transparent; border-radius:5px;
+  position:relative; display:inline-block; min-width:.9em; text-align:center;
+}
+.lyric-char.lq-hidden::after{
+  content:'ㅁ'; color:#fff; font-size:.85em; position:absolute;
+  left:50%; top:50%; transform:translate(-50%,-50%);
+}
+.lyric-blank{
+  display:inline-block; background:var(--accent); color:#fff;
+  border-radius:5px; padding:0 3px; font-weight:700;
+  min-width:.9em; text-align:center; cursor:default;
+}
+.lyric-blank.revealed{
+  background:#5A9E6F !important;
+  animation:popReveal .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popReveal{
+  0%{transform:scale(.6);opacity:0;}
+  100%{transform:scale(1);opacity:1;}
+}
+.lq-item{
+  background:var(--panel); border:1px solid var(--line); border-radius:12px;
+  padding:14px 16px; margin-bottom:10px; cursor:pointer;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.lq-item:hover{ background:var(--panel2); border-color:var(--accent); }
+.lq-item .lq-info .lq-title{ font-weight:700; font-size:14px; }
+.lq-item .lq-info .lq-meta{ font-size:11px; color:var(--muted); margin-top:3px; }
+.lq-del{ color:var(--muted); font-size:18px; padding:4px 8px; background:none; border:none; cursor:pointer; }
+.lq-del:hover{ color:#c0392b; }
+.lq-empty{ color:var(--muted); font-size:14px; text-align:center; padding:40px 0; }
 </style>
 </head>
 <body>
@@ -563,39 +601,66 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
         목록에서 슬라이드를 클릭하면 결과를 볼 수 있어요.
       </div>
     </div>
-    <!-- 퀴즈 모드 -->
+    <!-- 퀴즈 모드 (가사 맞히기) -->
     <div class="quiz-mode-panel" id="quizModePanel">
-      <!-- 퀴즈 선택 목록 -->
-      <div id="quizListView" style="width:100%;">
-        <div style="font-size:18px;font-weight:800;margin-bottom:16px;color:var(--text);">🏆 퀴즈 목록</div>
-        <div class="quiz-grid" id="quizGridArea"></div>
+
+      <!-- 1. 목록 뷰 -->
+      <div id="lqListView" style="width:100%;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+          <div style="font-size:18px;font-weight:800;">🎵 가사 맞히기 퀴즈</div>
+          <button class="primary-btn" id="lqNewBtn" style="width:auto;padding:9px 18px;font-size:13px;">+ 새 퀴즈 만들기</button>
+        </div>
+        <div id="lqList"></div>
       </div>
-      <!-- 활성 퀴즈 표시 -->
-      <div id="quizShowView" style="display:none;width:100%;text-align:center;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-          <button class="icon-btn" id="qsPrevBtn">← 이전</button>
-          <span id="qsCounter" style="font-size:13px;color:var(--muted);font-weight:600;"></span>
-          <button class="icon-btn" id="qsNextBtn">다음 →</button>
+
+      <!-- 2. 만들기/편집 뷰 -->
+      <div id="lqEditView" style="display:none;width:100%;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+          <button class="icon-btn" id="lqEditBackBtn">← 목록</button>
+          <div style="font-size:16px;font-weight:800;" id="lqEditTitle">새 퀴즈 만들기</div>
         </div>
-        <div id="qsTypeBadge" style="display:inline-block;font-size:12px;padding:4px 12px;border-radius:999px;background:#fff3e0;color:#b34700;font-weight:700;margin-bottom:16px;"></div>
-        <div id="qsImage" style="margin-bottom:16px;"></div>
-        <div id="qsQuestion" style="font-size:32px;font-weight:900;line-height:1.4;margin-bottom:28px;word-break:keep-all;color:var(--text);max-width:780px;margin-left:auto;margin-right:auto;"></div>
-        <!-- 정답 공개 전 -->
-        <div id="qsBeforeReveal">
-          <button class="quiz-reveal-big" id="qsRevealBtn" style="max-width:320px;font-size:18px;padding:18px 40px;">🎯 정답 공개</button>
+        <!-- Step 1: 가사 입력 -->
+        <div id="lqStep1">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">노래 제목</div>
+          <input type="text" id="lqTitleInput" placeholder="예) 아버지 - 싸이" style="width:100%;margin-bottom:12px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">전체 가사를 입력하세요</div>
+          <textarea id="lqLyricsInput" placeholder="더 많은 것을 해주는 다른 아빠와 비교&#10;더 좋은 것을 사주는 다른 아빠와 나를 비교"
+            style="width:100%;min-height:140px;padding:12px;border-radius:11px;border:1.5px solid var(--line);
+            background:var(--panel2);font-size:16px;font-family:inherit;resize:vertical;line-height:1.8;"></textarea>
+          <button class="primary-btn" id="lqStep1Btn" style="margin-top:12px;">다음: 숨길 음절 선택 →</button>
         </div>
-        <!-- 정답 공개 후 -->
-        <div id="qsAfterReveal" style="display:none;">
-          <div style="font-size:14px;color:var(--muted);margin-bottom:8px;">정답</div>
-          <div id="qsAnswer" style="font-size:40px;font-weight:900;color:var(--accent);padding:20px 40px;background:#FBE6D3;border-radius:16px;display:inline-block;"></div>
-          <div style="margin-top:20px;">
-            <button class="quiz-reveal-big" id="qsHideBtn" style="max-width:260px;font-size:14px;padding:12px 28px;background:#9C8770;">↩ 정답 숨기기</button>
+        <!-- Step 2: 음절 선택 -->
+        <div id="lqStep2" style="display:none;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">
+            숨길 음절을 <b>클릭</b>하세요. 다시 클릭하면 취소됩니다.
+          </div>
+          <div id="lqCharEditor" style="font-size:22px;line-height:2.2;word-break:keep-all;
+            background:var(--panel2);border-radius:12px;padding:16px 20px;margin-bottom:16px;"></div>
+          <div style="display:flex;gap:10px;">
+            <button class="icon-btn" id="lqStep2BackBtn">← 가사 수정</button>
+            <button class="primary-btn" id="lqSaveBtn" style="flex:1;">💾 저장</button>
           </div>
         </div>
-        <div style="margin-top:24px;">
-          <button class="quiz-end-btn" id="qsListBtn" style="font-size:13px;">📋 목록으로</button>
+      </div>
+
+      <!-- 3. 진행 뷰 -->
+      <div id="lqPlayView" style="display:none;width:100%;text-align:center;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <button class="icon-btn" id="lqPlayBackBtn">← 목록</button>
+          <div id="lqPlayTitle" style="font-size:15px;font-weight:800;color:var(--muted);"></div>
+          <div style="width:60px;"></div>
+        </div>
+        <div id="lqLyricsDisplay" style="font-size:26px;line-height:2.4;word-break:keep-all;
+          background:var(--panel);border-radius:16px;padding:28px 32px;
+          border:1px solid var(--line);margin-bottom:24px;text-align:left;max-width:800px;margin-left:auto;margin-right:auto;"></div>
+        <div id="lqRevealArea">
+          <button class="quiz-reveal-big" id="lqRevealBtn" style="max-width:300px;font-size:17px;padding:16px 36px;">🎯 정답 확인</button>
+        </div>
+        <div id="lqRevealedArea" style="display:none;margin-top:16px;">
+          <button class="quiz-reveal-big" id="lqHideBtn" style="max-width:260px;font-size:14px;padding:12px 28px;background:#9C8770;">↩ 다시 숨기기</button>
         </div>
       </div>
+
     </div>
   </div>
 </div>
@@ -1624,8 +1689,6 @@ document.getElementById('quizEndBtn').onclick = ()=>{
 
 // ── 설문/퀴즈 탭 전환 ──
 let currentMode = 'survey';
-let quizSlideIds = [];
-let currentQuizIdx = 0;
 
 document.getElementById('surveyTab').onclick = ()=> switchMode('survey');
 document.getElementById('quizTab').onclick = ()=> switchMode('quiz');
@@ -1636,108 +1699,159 @@ function switchMode(mode){
   document.getElementById('quizTab').classList.toggle('active', mode==='quiz');
   document.getElementById('surveyStage').style.display = mode==='survey' ? 'flex' : 'none';
   document.getElementById('quizModePanel').classList.toggle('show', mode==='quiz');
-  if(mode==='quiz'){ showQuizList(); }
+  if(mode==='quiz') lqShowList();
 }
 
-function getQuizSlides(){
-  return Object.entries(slides)
-    .filter(([,s])=>QUIZ_TYPES.includes(s.type))
-    .sort((a,b)=>a[1].createdAt-b[1].createdAt);
-}
+// ── 가사 퀴즈 (Lyrics Quiz) ──
+let lqHiddenSet = new Set(); // 현재 편집 중인 숨김 인덱스
+let lqChars = [];            // 현재 편집 중인 문자 배열
+let lqEditingId = null;      // 편집 중인 퀴즈 ID (null=새 퀴즈)
 
-function getYoutubeEmbedUrl(url){
-  try{
-    // youtube.com/watch?v=ID 또는 youtu.be/ID 형식 처리
-    const u = new URL(url);
-    let vid = '';
-    if(u.hostname.includes('youtu.be')){
-      vid = u.pathname.slice(1);
-    } else if(u.hostname.includes('youtube.com')){
-      vid = u.searchParams.get('v') || '';
-      // shorts 지원
-      if(!vid && u.pathname.includes('/shorts/')){
-        vid = u.pathname.split('/shorts/')[1];
-      }
-    }
-    vid = vid.split('&')[0].split('?')[0];
-    return vid ? `https://www.youtube.com/embed/${vid}` : '';
-  } catch(e){ return ''; }
-}
-
-function showQuizList(){
-  const typeLabel = {ox_quiz:'OX퀴즈', short_quiz:'단답형', image_quiz:'이미지퀴즈', video_quiz:'영상퀴즈'};
-  const area = document.getElementById('quizGridArea');
-  const quizSlides = getQuizSlides();
-  quizSlideIds = quizSlides.map(([id])=>id);
-
-  document.getElementById('quizListView').style.display='block';
-  document.getElementById('quizShowView').style.display='none';
-
-  if(!quizSlides.length){
-    area.innerHTML='<div style="color:var(--muted);font-size:14px;padding:20px 0;">퀴즈 슬라이드가 없습니다.<br>사이드바에서 OX퀴즈 / 단답형 / 이미지퀴즈를 추가해주세요.</div>';
-    return;
-  }
-  area.innerHTML = quizSlides.map(([id,s],i)=>`
-    <div class="quiz-grid-item" data-idx="${i}">
-      <div class="qgi-type">${typeLabel[s.type]||s.type}</div>
-      <div class="qgi-q">${escapeHtml(s.question)}</div>
-      ${s.answer?`<div class="qgi-cnt" style="color:#b34700;">정답: ${escapeHtml(s.answer)}</div>`:''}
-    </div>`).join('');
-  area.querySelectorAll('.quiz-grid-item').forEach(el=>{
-    el.onclick = ()=> showQuizSlide(parseInt(el.dataset.idx));
+function lqShowView(viewId){
+  ['lqListView','lqEditView','lqPlayView'].forEach(id=>{
+    document.getElementById(id).style.display = id===viewId ? 'block' : 'none';
   });
 }
 
-function showQuizSlide(idx){
-  const quizSlides = getQuizSlides();
-  if(!quizSlides.length) return;
-  currentQuizIdx = Math.max(0, Math.min(idx, quizSlides.length-1));
-  const [id, s] = quizSlides[currentQuizIdx];
-  const typeLabel = {ox_quiz:'OX퀴즈', short_quiz:'단답형퀴즈', image_quiz:'이미지퀴즈', video_quiz:'영상퀴즈'};
-
-  document.getElementById('quizListView').style.display='none';
-  document.getElementById('quizShowView').style.display='block';
-  document.getElementById('qsCounter').textContent = `${currentQuizIdx+1} / ${quizSlides.length}`;
-  document.getElementById('qsTypeBadge').textContent = typeLabel[s.type]||s.type;
-  document.getElementById('qsQuestion').textContent = s.question;
-  document.getElementById('qsAnswer').textContent = s.answer||'';
-
-  // 이미지 또는 영상
-  const imgEl = document.getElementById('qsImage');
-  if(s.videoUrl){
-    const embedUrl = getYoutubeEmbedUrl(s.videoUrl);
-    imgEl.innerHTML = embedUrl
-      ? `<iframe src="${embedUrl}" width="640" height="360"
-           style="max-width:100%;border-radius:14px;border:none;"
-           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-           allowfullscreen></iframe>`
-      : `<div style="color:#c0392b;font-size:13px;">유튜브 URL을 인식할 수 없어요.</div>`;
-  } else if(s.imageUrl){
-    imgEl.innerHTML = `<img src="${escapeHtml(s.imageUrl)}" style="max-width:560px;max-height:320px;object-fit:contain;border-radius:14px;border:1px solid var(--line);" onerror="this.style.display='none'">`;
-  } else {
-    imgEl.innerHTML = '';
-  }
-
-  // 정답 숨김 초기화
-  document.getElementById('qsBeforeReveal').style.display='block';
-  document.getElementById('qsAfterReveal').style.display='none';
-
-  // 이전/다음 버튼 상태
-  document.getElementById('qsPrevBtn').disabled = currentQuizIdx===0;
-  document.getElementById('qsNextBtn').disabled = currentQuizIdx===quizSlides.length-1;
+// 목록
+function lqShowList(){
+  lqShowView('lqListView');
+  const listEl = document.getElementById('lqList');
+  db.ref('sessions/'+sessionCode+'/lyricsQuizzes').get().then(snap=>{
+    const data = snap.val()||{};
+    const items = Object.entries(data).sort((a,b)=>a[1].createdAt-b[1].createdAt);
+    if(!items.length){
+      listEl.innerHTML='<div class="lq-empty">아직 만든 가사 퀴즈가 없어요.<br>+ 새 퀴즈 만들기를 눌러 시작하세요!</div>';
+      return;
+    }
+    listEl.innerHTML = items.map(([id,q])=>`
+      <div class="lq-item" data-lqid="${id}">
+        <div class="lq-info">
+          <div class="lq-title">🎵 ${escapeHtml(q.title||'제목 없음')}</div>
+          <div class="lq-meta">숨김 ${(q.hidden||[]).length}음절 · ${q.lyrics?.length||0}자</div>
+        </div>
+        <button class="lq-del" data-delid="${id}" title="삭제">✕</button>
+      </div>`).join('');
+    listEl.querySelectorAll('.lq-item').forEach(el=>{
+      el.onclick = e=>{
+        if(e.target.classList.contains('lq-del')) return;
+        lqPlay(el.dataset.lqid, data[el.dataset.lqid]);
+      };
+    });
+    listEl.querySelectorAll('.lq-del').forEach(btn=>{
+      btn.onclick = e=>{
+        e.stopPropagation();
+        if(confirm('이 퀴즈를 삭제할까요?'))
+          db.ref('sessions/'+sessionCode+'/lyricsQuizzes/'+btn.dataset.delid).remove()
+            .then(()=>lqShowList());
+      };
+    });
+  });
 }
 
-document.getElementById('qsRevealBtn').onclick = ()=>{
-  document.getElementById('qsBeforeReveal').style.display='none';
-  document.getElementById('qsAfterReveal').style.display='block';
+// 만들기 - Step 1 (가사 입력)
+document.getElementById('lqNewBtn').onclick = ()=>{
+  lqEditingId = null;
+  document.getElementById('lqEditTitle').textContent = '새 퀴즈 만들기';
+  document.getElementById('lqTitleInput').value = '';
+  document.getElementById('lqLyricsInput').value = '';
+  document.getElementById('lqStep1').style.display='block';
+  document.getElementById('lqStep2').style.display='none';
+  lqHiddenSet = new Set();
+  lqShowView('lqEditView');
 };
-document.getElementById('qsHideBtn').onclick = ()=>{
-  document.getElementById('qsBeforeReveal').style.display='block';
-  document.getElementById('qsAfterReveal').style.display='none';
+document.getElementById('lqEditBackBtn').onclick = ()=> lqShowList();
+
+// Step 1 → Step 2
+document.getElementById('lqStep1Btn').onclick = ()=>{
+  const lyrics = document.getElementById('lqLyricsInput').value;
+  if(!lyrics.trim()){ alert('가사를 입력해주세요.'); return; }
+  lqChars = [...lyrics]; // 유니코드 문자 배열
+  lqHiddenSet = new Set();
+  lqRenderEditor();
+  document.getElementById('lqStep1').style.display='none';
+  document.getElementById('lqStep2').style.display='block';
 };
-document.getElementById('qsListBtn').onclick = ()=> showQuizList();
-document.getElementById('qsPrevBtn').onclick = ()=> showQuizSlide(currentQuizIdx-1);
-document.getElementById('qsNextBtn').onclick = ()=> showQuizSlide(currentQuizIdx+1);
+document.getElementById('lqStep2BackBtn').onclick = ()=>{
+  document.getElementById('lqStep1').style.display='block';
+  document.getElementById('lqStep2').style.display='none';
+};
+
+function lqRenderEditor(){
+  const el = document.getElementById('lqCharEditor');
+  el.innerHTML = '';
+  lqChars.forEach((ch, i)=>{
+    if(ch==='\n'){ el.appendChild(document.createElement('br')); return; }
+    if(ch===' '){
+      const sp = document.createElement('span');
+      sp.innerHTML='&nbsp;';
+      el.appendChild(sp);
+      return;
+    }
+    const span = document.createElement('span');
+    span.className = 'lyric-char' + (lqHiddenSet.has(i)?' lq-hidden':'');
+    span.textContent = ch;
+    span.dataset.idx = i;
+    span.onclick = ()=>{
+      if(lqHiddenSet.has(i)) lqHiddenSet.delete(i);
+      else lqHiddenSet.add(i);
+      span.classList.toggle('lq-hidden', lqHiddenSet.has(i));
+    };
+    el.appendChild(span);
+  });
+}
+
+// 저장
+document.getElementById('lqSaveBtn').onclick = ()=>{
+  const title = document.getElementById('lqTitleInput').value.trim()||'제목 없음';
+  const lyrics = lqChars.join('');
+  const hidden = [...lqHiddenSet].sort((a,b)=>a-b);
+  const data = { title, lyrics, hidden, createdAt: Date.now() };
+  const ref = lqEditingId
+    ? db.ref('sessions/'+sessionCode+'/lyricsQuizzes/'+lqEditingId)
+    : db.ref('sessions/'+sessionCode+'/lyricsQuizzes').push();
+  ref.set(data).then(()=>{ lqEditingId=null; lqShowList(); lqShowView('lqListView'); });
+};
+
+// 진행
+function lqPlay(id, q){
+  document.getElementById('lqPlayTitle').textContent = '🎵 '+(q.title||'제목 없음');
+  lqRenderPlay(q.lyrics, q.hidden||[], false);
+  document.getElementById('lqRevealArea').style.display='block';
+  document.getElementById('lqRevealedArea').style.display='none';
+  lqShowView('lqPlayView');
+
+  document.getElementById('lqRevealBtn').onclick = ()=>{
+    lqRenderPlay(q.lyrics, q.hidden||[], true);
+    document.getElementById('lqRevealArea').style.display='none';
+    document.getElementById('lqRevealedArea').style.display='block';
+  };
+  document.getElementById('lqHideBtn').onclick = ()=>{
+    lqRenderPlay(q.lyrics, q.hidden||[], false);
+    document.getElementById('lqRevealArea').style.display='block';
+    document.getElementById('lqRevealedArea').style.display='none';
+  };
+}
+
+function lqRenderPlay(lyrics, hidden, revealed){
+  const hiddenSet = new Set(hidden);
+  const chars = [...lyrics];
+  const el = document.getElementById('lqLyricsDisplay');
+  el.innerHTML='';
+  chars.forEach((ch, i)=>{
+    if(ch==='\n'){ el.appendChild(document.createElement('br')); return; }
+    if(hiddenSet.has(i)){
+      const span = document.createElement('span');
+      span.className = 'lyric-blank' + (revealed?' revealed':'');
+      span.textContent = revealed ? ch : 'ㅁ';
+      el.appendChild(span);
+    } else {
+      el.appendChild(document.createTextNode(ch));
+    }
+  });
+}
+
+document.getElementById('lqPlayBackBtn').onclick = ()=> lqShowList();
 
 // ── 사이드바 토글 ──
 const sidebarToggle = document.getElementById('sidebarToggle');
