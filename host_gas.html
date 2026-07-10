@@ -916,7 +916,7 @@ function renderSlideList(){
     item.innerHTML=`<div class="left">
       <span class="drag-handle" title="드래그하여 순서 변경">⠿</span>
       <span class="tag">${typeLabel[s.type]}</span>
-      <span class="target-badge ${tgt}">${targetLabel[tgt]}</span>
+      <span class="target-badge ${tgt}" title="클릭하여 대상 변경" style="cursor:pointer;">${targetLabel[tgt]}</span>
       <span>${s.question.slice(0,12)}${s.question.length>12?'…':''}</span>
     </div>
     <span><span class="resp-badge">${cnt}명</span><span class="del" title="삭제">✕</span></span>`;
@@ -924,8 +924,15 @@ function renderSlideList(){
       e.stopPropagation();
       if(confirm('삭제할까요?')) db.ref('sessions/'+sessionCode+'/slides/'+id).remove();
     };
+    // target 뱃지 클릭 → 순환 변경
+    item.querySelector('.target-badge').onclick = e=>{
+      e.stopPropagation();
+      const cycle = {all:'father', father:'son', son:'all'};
+      const newTarget = cycle[s.target||'all'];
+      db.ref('sessions/'+sessionCode+'/slides/'+id+'/target').set(newTarget);
+    };
     item.onclick = e=>{
-      if(e.target.classList.contains('drag-handle') || e.target.classList.contains('del')) return;
+      if(e.target.classList.contains('drag-handle') || e.target.classList.contains('del') || e.target.classList.contains('target-badge')) return;
       showSlideResult(id);
     };
 
