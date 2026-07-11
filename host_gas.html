@@ -469,6 +469,58 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
 .sidebar-tab:hover{color:var(--text);}
 .sidebar-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 .sidebar-tab:last-child.active{color:#b34700;border-bottom-color:#b34700;}
+/* 퀴즈 발표 모드 오버레이 */
+.quiz-presenter{
+  position:fixed; inset:0; background:#0f0a05; z-index:200;
+  display:none; flex-direction:column;
+  font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.quiz-presenter.show{display:flex;}
+.qp-topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 40px; border-bottom:1px solid rgba(255,255,255,.1);
+}
+.qp-title{font-size:18px;font-weight:800;color:rgba(255,255,255,.7);}
+.qp-close{
+  background:rgba(255,255,255,.1); border:none; color:rgba(255,255,255,.7);
+  padding:8px 18px; border-radius:8px; cursor:pointer; font-size:13px;
+}
+.qp-close:hover{background:rgba(255,255,255,.2); color:#fff;}
+.qp-body{
+  flex:1; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; padding:40px 80px; overflow-y:auto;
+}
+.qp-lyrics{
+  font-size:44px; font-weight:900; line-height:2.2;
+  text-align:center; word-break:keep-all; color:#fff;
+  max-width:1100px; margin-bottom:40px;
+}
+.qp-blank{
+  display:inline-block; background:rgba(255,255,255,.15);
+  border:2px solid rgba(255,255,255,.3); border-radius:8px;
+  color:rgba(255,255,255,.4); padding:0 6px; min-width:1.1em;
+  text-align:center; font-weight:900;
+}
+.qp-blank.revealed{
+  background:#E8A23D; border-color:#E8A23D; color:#fff;
+  animation:qpPop .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes qpPop{
+  0%{transform:scale(.5) translateY(10px);opacity:0;}
+  100%{transform:scale(1) translateY(0);opacity:1;}
+}
+.qp-reveal-btn{
+  font-size:20px; font-weight:800; padding:18px 60px;
+  background:linear-gradient(135deg,#D97A42,#E8A23D);
+  color:#fff; border:none; border-radius:16px; cursor:pointer;
+}
+.qp-reveal-btn:hover{opacity:.9; transform:scale(1.02);}
+.qp-youtube{
+  width:100%; max-width:800px; margin-top:32px;
+  border-radius:16px; overflow:hidden;
+}
+.qp-youtube iframe{width:100%; height:450px; border:none;}
 /* 가사 퀴즈 */
 .lyric-char{
   display:inline; cursor:pointer; border-radius:4px;
@@ -607,7 +659,10 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
           <textarea id="lqLyricsInput" placeholder="더 많은 것을 해주는 다른 아빠와 비교&#10;더 좋은 것을 사주는 다른 아빠와 나를 비교"
             style="width:100%;min-height:140px;padding:12px;border-radius:11px;border:1.5px solid var(--line);
             background:var(--panel2);font-size:16px;font-family:inherit;resize:vertical;line-height:1.8;"></textarea>
-          <button class="primary-btn" id="lqStep1Btn" style="margin-top:12px;">다음: 숨길 음절 선택 →</button>
+          <div style="font-size:12px;color:var(--muted);margin:10px 0 6px;">🎬 정답 공개 후 재생할 유튜브 URL <span style="color:var(--muted);font-weight:400;">(선택)</span></div>
+          <input type="text" id="lqYoutubeInput" placeholder="https://www.youtube.com/watch?v=..." style="width:100%;margin-bottom:4px;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">※ 특정 시간부터 시작하려면 URL에 &t=90 (초) 추가</div>
+          <button class="primary-btn" id="lqStep1Btn" style="margin-top:4px;">다음: 숨길 음절 선택 →</button>
         </div>
         <!-- Step 2: 음절 선택 -->
         <div id="lqStep2" style="display:none;">
@@ -639,9 +694,27 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
         <div id="lqRevealedArea" style="display:none;margin-top:16px;">
           <button class="quiz-reveal-big" id="lqHideBtn" style="max-width:260px;font-size:14px;padding:12px 28px;background:#9C8770;">↩ 다시 숨기기</button>
         </div>
+        <div style="margin-top:16px;">
+          <button class="quiz-reveal-big" id="lqPresentBtn" style="max-width:300px;font-size:17px;padding:16px 36px;background:linear-gradient(135deg,#2c1810,#4a2c1a);border:1px solid rgba(255,255,255,.2);">🎬 발표 모드로 보기</button>
+        </div>
       </div>
 
     </div>
+  </div>
+</div>
+
+<!-- 퀴즈 발표 모드 오버레이 -->
+<div class="quiz-presenter" id="quizPresenter">
+  <div class="qp-topbar">
+    <div class="qp-title" id="qpTitle"></div>
+    <button class="qp-close" id="qpClose">✕ 종료</button>
+  </div>
+  <div class="qp-body" id="qpBody">
+    <div class="qp-lyrics" id="qpLyrics"></div>
+    <div class="qp-actions" id="qpActions">
+      <button class="qp-reveal-btn" id="qpRevealBtn">🎯 정답 확인</button>
+    </div>
+    <div class="qp-youtube" id="qpYoutube" style="display:none;"></div>
   </div>
 </div>
 
@@ -1607,6 +1680,7 @@ document.getElementById('lqNewBtn').onclick = ()=>{
   document.getElementById('lqEditTitle').textContent = '새 퀴즈 만들기';
   document.getElementById('lqTitleInput').value = '';
   document.getElementById('lqLyricsInput').value = '';
+  document.getElementById('lqYoutubeInput').value = '';
   document.getElementById('lqStep1').style.display='block';
   document.getElementById('lqStep2').style.display='none';
   lqHiddenSet = new Set();
@@ -1658,7 +1732,9 @@ document.getElementById('lqSaveBtn').onclick = ()=>{
   const title = document.getElementById('lqTitleInput').value.trim()||'제목 없음';
   const lyrics = lqChars.join('');
   const hidden = [...lqHiddenSet].sort((a,b)=>a-b);
+  const youtubeUrl = document.getElementById('lqYoutubeInput').value.trim();
   const data = { title, lyrics, hidden, createdAt: Date.now() };
+  if(youtubeUrl) data.youtubeUrl = youtubeUrl;
   const ref = lqEditingId
     ? db.ref('sessions/'+sessionCode+'/lyricsQuizzes/'+lqEditingId)
     : db.ref('sessions/'+sessionCode+'/lyricsQuizzes').push();
@@ -1687,7 +1763,62 @@ function lqPlay(id, q){
     document.getElementById('lqRevealArea').style.display='block';
     document.getElementById('lqRevealedArea').style.display='none';
   };
+  // 발표 모드 버튼
+  document.getElementById('lqPresentBtn').onclick = ()=> lqPresent(q);
 }
+
+// ── 퀴즈 발표 모드 (전체화면 어두운 배경) ──
+function lqPresent(q){
+  const overlay = document.getElementById('quizPresenter');
+  document.getElementById('qpTitle').textContent = '🎵 '+(q.title||'제목 없음');
+  qpRenderLyrics(q.lyrics, q.hidden||[], false);
+  document.getElementById('qpYoutube').style.display='none';
+  document.getElementById('qpYoutube').innerHTML='';
+  document.getElementById('qpRevealBtn').style.display='inline-block';
+  overlay.classList.add('show');
+
+  // 정답 확인 버튼
+  document.getElementById('qpRevealBtn').onclick = ()=>{
+    qpRenderLyrics(q.lyrics, q.hidden||[], true);
+    document.getElementById('qpRevealBtn').style.display='none';
+    // 유튜브 영상 표시
+    if(q.youtubeUrl){
+      const embedUrl = getYoutubeEmbedUrl(q.youtubeUrl);
+      if(embedUrl){
+        const autoplay = embedUrl + (embedUrl.includes('?')?'&':'?') + 'autoplay=1';
+        document.getElementById('qpYoutube').innerHTML =
+          `<iframe src="${autoplay}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+        document.getElementById('qpYoutube').style.display='block';
+      }
+    }
+  };
+}
+
+function qpRenderLyrics(lyrics, hidden, revealed){
+  const hiddenSet = new Set(hidden);
+  const chars = [...lyrics];
+  const el = document.getElementById('qpLyrics');
+  el.innerHTML='';
+  chars.forEach((ch, i)=>{
+    if(ch==='\n'){ el.appendChild(document.createElement('br')); return; }
+    if(hiddenSet.has(i)){
+      const span = document.createElement('span');
+      span.className = 'qp-blank' + (revealed?' revealed':'');
+      span.textContent = revealed ? ch : 'ㅁ';
+      // 공개 애니메이션 딜레이 (순서대로)
+      if(revealed) span.style.animationDelay = (i * 0.02) + 's';
+      el.appendChild(span);
+    } else {
+      el.appendChild(document.createTextNode(ch));
+    }
+  });
+}
+
+document.getElementById('qpClose').onclick = ()=>{
+  document.getElementById('quizPresenter').classList.remove('show');
+  // 유튜브 정지
+  document.getElementById('qpYoutube').innerHTML='';
+};
 
 function lqRenderPlay(lyrics, hidden, revealed){
   const hiddenSet = new Set(hidden);
