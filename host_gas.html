@@ -1038,7 +1038,6 @@ function listenSlides(){
   db.ref('sessions/'+sessionCode+'/slides').on('value', snap=>{
     slides = snap.val()||{};
     renderSlideList();
-    renderQuizSlideList();
   });
   db.ref('sessions/'+sessionCode+'/responses').on('value', snap=>{
     const all = snap.val()||{};
@@ -1051,13 +1050,10 @@ function listenSlides(){
     });
     document.getElementById('totalResponses').textContent=total;
     renderSlideList();
-    renderQuizSlideList();
     if(activeSlideId && slides[activeSlideId]){
       db.ref('sessions/'+sessionCode+'/responses/'+activeSlideId).get().then(s=>renderResults(slides[activeSlideId], s.val()||{}));
     }
   });
-  // 퀴즈 상태 구독
-  listenQuizState();
 }
 
 function renderSlideList(){
@@ -1582,91 +1578,6 @@ function reorderSlides(draggedId, targetId){
 }
 
 // ── 퀴즈 진행 ──
-let activeQuizId = null;
-let quizRevealed = false;
-
-function renderQuizSlideList(){
-  const list = document.getElementById('quizSlideList');
-  const typeLabel = {ox_quiz:'OX퀴즈', short_quiz:'단답형', image_quiz:'이미지퀴즈'};
-  const quizSlides = Object.entries(slides)
-    .filter(([,s])=>QUIZ_TYPES.includes(s.type))
-    .sort((a,b)=>a[1].createdAt-b[1].createdAt);
-
-  if(!quizSlides.length){
-    list.innerHTML='<div class="quiz-empty">퀴즈 슬라이드가 없습니다</div>';
-    return;
-  }
-  list.innerHTML = quizSlides.map(([id,s])=>`
-    <div class="quiz-slide-item${id===activeQuizId?' active-quiz':''}" data-qid="${id}">
-      <span><span class="q-tag">${typeLabel[s.type]||s.type}</span>${escapeHtml(s.question.slice(0,14))}${s.question.length>14?'…':''}</span>
-      <span style="font-size:11px;opacity:.7;">${responseCounts[id]||0}명</span>
-    </div>`).join('');
-
-  list.querySelectorAll('.quiz-slide-item').forEach(el=>{
-    el.onclick = ()=> activateQuiz(el.dataset.qid);
-  });
-}
-
-function activateQuiz(id){
-  activeQuizId = id;
-  quizRevealed = false;
-  db.ref('sessions/'+sessionCode+'/quizState').set({
-    activeQuizId: id, revealed: false
-  });
-  const s = slides[id];
-  document.getElementById('activeQuizPanel').style.display='block';
-  document.getElementById('activeQuizTitle').textContent = s.question;
-  document.getElementById('quizStatusBadge').style.display='inline';
-  const revealBtn = document.getElementById('quizRevealBtn');
-  revealBtn.textContent='🎯 정답 공개';
-  revealBtn.className='reveal-btn';
-  renderQuizSlideList();
-  showSlideResult(id);
-}
-
-function listenQuizState(){
-  db.ref('sessions/'+sessionCode+'/quizState').on('value', snap=>{
-    const state = snap.val()||{};
-    activeQuizId = state.activeQuizId||null;
-    quizRevealed = !!state.revealed;
-    renderQuizSlideList();
-    if(activeQuizId){
-      document.getElementById('activeQuizPanel').style.display='block';
-      document.getElementById('quizStatusBadge').style.display='inline';
-      const revealBtn = document.getElementById('quizRevealBtn');
-      if(quizRevealed){
-        revealBtn.textContent='✅ 정답 공개됨';
-        revealBtn.className='reveal-btn done';
-        if(activeSlideId===activeQuizId && slides[activeQuizId]){
-          revealedSlides[activeQuizId]=true;
-        }
-      } else {
-        revealBtn.textContent='🎯 정답 공개';
-        revealBtn.className='reveal-btn';
-      }
-    } else {
-      document.getElementById('activeQuizPanel').style.display='none';
-      document.getElementById('quizStatusBadge').style.display='none';
-    }
-  });
-}
-
-document.getElementById('quizRevealBtn').onclick = ()=>{
-  if(!activeQuizId) return;
-  quizRevealed = !quizRevealed;
-  db.ref('sessions/'+sessionCode+'/quizState/revealed').set(quizRevealed);
-  if(quizRevealed && slides[activeQuizId]) revealedSlides[activeQuizId]=true;
-};
-
-document.getElementById('quizEndBtn').onclick = ()=>{
-  activeQuizId = null;
-  quizRevealed = false;
-  db.ref('sessions/'+sessionCode+'/quizState').set({activeQuizId:null, revealed:false});
-  document.getElementById('activeQuizPanel').style.display='none';
-  document.getElementById('quizStatusBadge').style.display='none';
-  renderQuizSlideList();
-};
-
 // ── 설문/퀴즈 탭 전환 ──
 let currentMode = 'survey';
 
