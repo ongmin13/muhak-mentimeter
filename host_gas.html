@@ -11,7 +11,7 @@
 <style>
 :root{
   --topbar-h:57px;
-  --tabbar-h:42px;
+  --tabbar-h:0px;
   --bg:#FBF2E2; --panel:#FFFFFF; --panel2:#F3E4CC;
   --accent:#D97A42; --accent2:#8C5A2B; --text:#3A2A1E;
   --muted:#9C8770; --line:#E6D4B8;
@@ -521,11 +521,6 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
   </div>
 </div>
 
-<!-- 설문/퀴즈 탭바 -->
-<div class="mode-tabbar">
-  <button class="mode-tab active" id="surveyTab">📋 설문</button>
-  <button class="mode-tab quiz-tab" id="quizTab">🏆 퀴즈</button>
-</div>
 
 <button class="sidebar-toggle" id="sidebarToggle" title="패널 접기">◀</button>
 <div class="layout" id="layout">
@@ -1675,17 +1670,11 @@ document.getElementById('quizEndBtn').onclick = ()=>{
 // ── 설문/퀴즈 탭 전환 ──
 let currentMode = 'survey';
 
-document.getElementById('surveyTab').onclick = ()=> switchMode('survey');
-document.getElementById('quizTab').onclick = ()=> switchMode('quiz');
-
 document.getElementById('sidebarSurveyTab').onclick = ()=> switchMode('survey');
 document.getElementById('sidebarQuizTab').onclick = ()=> switchMode('quiz');
 
 function switchMode(mode){
   currentMode = mode;
-  // 상단 탭
-  document.getElementById('surveyTab').classList.toggle('active', mode==='survey');
-  document.getElementById('quizTab').classList.toggle('active', mode==='quiz');
   // 사이드바 탭
   document.getElementById('sidebarSurveyTab').classList.toggle('active', mode==='survey');
   document.getElementById('sidebarQuizTab').classList.toggle('active', mode==='quiz');
