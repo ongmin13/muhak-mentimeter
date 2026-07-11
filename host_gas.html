@@ -958,35 +958,9 @@ targetTabs.forEach(btn=>{
 function renderOptsArea(){
   const area = document.getElementById('optsArea');
   const addBtn = document.getElementById('addOptBtn');
-  const quizArea = document.getElementById('quizAnswerArea');
-  const oxBtns = document.getElementById('oxAnswerBtns');
-  const ansInput = document.getElementById('answerInput');
-  const imgArea = document.getElementById('imageUrlArea');
   area.innerHTML = '';
-
-  const isQuiz = QUIZ_TYPES.includes(currentType);
   addBtn.style.display = currentType==='mc' ? 'block' : 'none';
-  quizArea.style.display = isQuiz ? 'block' : 'none';
-  imgArea.style.display = currentType==='image_quiz' ? 'block' : 'none';
-  document.getElementById('videoUrlArea').style.display = currentType==='video_quiz' ? 'block' : 'none';
-
   if(currentType==='mc'){ addOptRow(); addOptRow(); }
-
-  if(isQuiz){
-    if(currentType==='ox_quiz'){
-      oxBtns.style.display='flex'; ansInput.style.display='none';      document.querySelectorAll('.quiz-ans-btn').forEach(b=>{
-        b.classList.remove('sel-o','sel-x');
-        if(b.dataset.ans===quizAnswer) b.classList.add(quizAnswer==='O'?'sel-o':'sel-x');
-        b.onclick=()=>{
-          quizAnswer=b.dataset.ans;
-          document.querySelectorAll('.quiz-ans-btn').forEach(x=>x.classList.remove('sel-o','sel-x'));
-          b.classList.add(quizAnswer==='O'?'sel-o':'sel-x');
-        };
-      });
-    } else {
-      oxBtns.style.display='none'; ansInput.style.display='block';
-    }
-  }
 }
 function addOptRow(val=''){
   const area=document.getElementById('optsArea');
@@ -1001,35 +975,13 @@ document.getElementById('createSlideBtn').onclick = ()=>{
   const q=document.getElementById('qInput').value.trim();
   if(!q){ alert('질문을 입력해주세요.'); return; }
   let slide={type:currentType, question:q, createdAt:Date.now(), target:currentTarget};
-
   if(currentType==='mc'){
     const opts=[...document.querySelectorAll('.optInput')].map(i=>i.value.trim()).filter(Boolean);
     if(opts.length<2){ alert('보기를 2개 이상 입력해주세요.'); return; }
     slide.options=opts;
-  } else if(QUIZ_TYPES.includes(currentType)){
-    if(currentType==='ox_quiz'){
-      slide.answer = quizAnswer;
-    } else {
-      const ans = document.getElementById('answerInput').value.trim();
-      if(!ans){ alert('정답을 입력해주세요.'); return; }
-      slide.answer = ans;
-    }
-    if(currentType==='image_quiz'){
-      const url = document.getElementById('imageUrlInput').value.trim();
-      if(!url){ alert('이미지 URL을 입력해주세요.'); return; }
-      slide.imageUrl = url;
-    }
-    if(currentType==='video_quiz'){
-      const url = document.getElementById('videoUrlInput').value.trim();
-      if(!url){ alert('유튜브 URL을 입력해주세요.'); return; }
-      slide.videoUrl = url;
-    }
   }
-
   db.ref('sessions/'+sessionCode+'/slides').push(slide);
   document.getElementById('qInput').value='';
-  if(document.getElementById('answerInput')) document.getElementById('answerInput').value='';
-  if(document.getElementById('imageUrlInput')) document.getElementById('imageUrlInput').value='';
   renderOptsArea();
 };
 
@@ -1644,40 +1596,9 @@ function lqShowView(viewId){
   });
 }
 
-// 목록
 function lqShowList(){
   lqShowView('lqListView');
-  const listEl = document.getElementById('lqList');
-  db.ref('sessions/'+sessionCode+'/lyricsQuizzes').get().then(snap=>{
-    const data = snap.val()||{};
-    const items = Object.entries(data).sort((a,b)=>a[1].createdAt-b[1].createdAt);
-    if(!items.length){
-      listEl.innerHTML='<div class="lq-empty">아직 만든 가사 퀴즈가 없어요.<br>+ 새 퀴즈 만들기를 눌러 시작하세요!</div>';
-      return;
-    }
-    listEl.innerHTML = items.map(([id,q])=>`
-      <div class="lq-item" data-lqid="${id}">
-        <div class="lq-info">
-          <div class="lq-title">🎵 ${escapeHtml(q.title||'제목 없음')}</div>
-          <div class="lq-meta">숨김 ${(q.hidden||[]).length}음절 · ${q.lyrics?.length||0}자</div>
-        </div>
-        <button class="lq-del" data-delid="${id}" title="삭제">✕</button>
-      </div>`).join('');
-    listEl.querySelectorAll('.lq-item').forEach(el=>{
-      el.onclick = e=>{
-        if(e.target.classList.contains('lq-del')) return;
-        lqPlay(el.dataset.lqid, data[el.dataset.lqid]);
-      };
-    });
-    listEl.querySelectorAll('.lq-del').forEach(btn=>{
-      btn.onclick = e=>{
-        e.stopPropagation();
-        if(confirm('이 퀴즈를 삭제할까요?'))
-          db.ref('sessions/'+sessionCode+'/lyricsQuizzes/'+btn.dataset.delid).remove()
-            .then(()=>lqShowList());
-      };
-    });
-  });
+  lqRenderSideList();
 }
 
 // 만들기 - Step 1 (가사 입력)
@@ -1795,7 +1716,7 @@ sidebarToggle.onclick = ()=>{
   const collapsed = layout.classList.toggle('collapsed');
   sidebarToggle.textContent = collapsed ? '▶' : '◀';
   sidebarToggle.title = collapsed ? '패널 펼치기' : '패널 접기';
-  document.getElementById('sidebar')?.style && (document.getElementById('sidebar').style.width = collapsed ? '0' : '');
+  document.querySelector('.sidebar').style.width = collapsed ? '0' : '';
   sidebarToggle.style.left = collapsed ? '0' : '300px';
 };
 
