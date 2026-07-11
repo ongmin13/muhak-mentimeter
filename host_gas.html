@@ -459,6 +459,16 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
 .tpl-del-btn{padding:6px 10px;border:none;border-radius:7px;background:var(--line);color:#c0392b;font-size:12px;cursor:pointer;}
 .tpl-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px 0;}
 .tpl-close{align-self:flex-end;background:transparent;border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:13px;color:var(--muted);}
+/* 사이드바 탭 */
+.sidebar-tabs{display:flex;border-bottom:2px solid var(--line);margin:-18px -18px 0;gap:0;}
+.sidebar-tab{
+  flex:1;padding:12px 0;font-size:13px;font-weight:700;
+  border:none;background:transparent;cursor:pointer;
+  color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;
+}
+.sidebar-tab:hover{color:var(--text);}
+.sidebar-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.sidebar-tab:last-child.active{color:#b34700;border-bottom-color:#b34700;}
 /* 가사 퀴즈 */
 .lyric-char{
   display:inline; cursor:pointer; border-radius:4px;
@@ -520,74 +530,51 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
 <button class="sidebar-toggle" id="sidebarToggle" title="패널 접기">◀</button>
 <div class="layout" id="layout">
   <div class="sidebar">
-    <h2>참여 현황</h2>
-    <div class="stat-bar">
-      <div class="stat-box"><div class="num" id="totalParticipants">0</div><div class="label">참여자</div></div>
-      <div class="stat-box"><div class="num" id="totalResponses">0</div><div class="label">총 응답</div></div>
+    <!-- 사이드바 탭 -->
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" id="sidebarSurveyTab">📋 설문</button>
+      <button class="sidebar-tab" id="sidebarQuizTab">🏆 퀴즈</button>
     </div>
 
-    <h2>퀴즈 진행 <span id="quizStatusBadge" style="font-size:10px;padding:2px 6px;border-radius:999px;background:#fff3e0;color:#b34700;font-weight:700;display:none;">진행중</span></h2>
-    <div id="quizControlPanel" style="margin-bottom:12px;">
-      <div class="quiz-slide-list" id="quizSlideList"></div>
-      <div id="activeQuizPanel" style="display:none;background:#fff3e0;border:1px solid #ffb74d;border-radius:10px;padding:10px;margin-top:8px;">
-        <div style="font-size:11px;color:#b34700;font-weight:700;margin-bottom:6px;">🎯 진행 중인 퀴즈</div>
-        <div id="activeQuizTitle" style="font-size:12px;color:var(--text);margin-bottom:8px;"></div>
-        <div style="display:flex;gap:6px;">
-          <button class="reveal-btn" id="quizRevealBtn" style="flex:2;padding:8px;font-size:12px;">정답 공개</button>
-          <button class="icon-btn" id="quizEndBtn" style="flex:1;font-size:11px;">종료</button>
+    <!-- 설문 사이드바 -->
+    <div id="sidebarSurveyPanel">
+      <div class="stat-bar" style="margin-top:14px;">
+        <div class="stat-box"><div class="num" id="totalParticipants">0</div><div class="label">참여자</div></div>
+        <div class="stat-box"><div class="num" id="totalResponses">0</div><div class="label">총 응답</div></div>
+      </div>
+      <h2>슬라이드 목록</h2>
+      <div class="slide-list" id="slideList"></div>
+      <div class="add-section">
+        <h2>슬라이드 추가</h2>
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+          <button class="icon-btn" style="flex:1;font-size:12px;" id="saveTemplateBtn">💾 템플릿 저장</button>
+          <button class="icon-btn" style="flex:1;font-size:12px;" id="loadTemplateBtn">📂 불러오기</button>
         </div>
+        <div id="slideTypeGrid">
+          <div class="type-row">
+            <button class="type-card sel" data-type="mc">객관식</button>
+            <button class="type-card" data-type="wordcloud">워드클라우드</button>
+            <button class="type-card" data-type="ox">OX</button>
+          </div>
+        </div>
+        <div class="target-divider">👥 대상</div>
+        <div class="target-tabs">
+          <button data-target="all" class="sel">👨‍👦 공통</button>
+          <button data-target="father">👨 아버지</button>
+          <button data-target="son">👦 아들</button>
+        </div>
+        <input type="text" id="qInput" placeholder="질문을 입력하세요">
+        <div id="optsArea"></div>
+        <button class="small-btn" id="addOptBtn">+ 보기 추가</button>
+        <button class="primary-btn" id="createSlideBtn">슬라이드 만들기</button>
       </div>
     </div>
 
-    <h2>슬라이드 목록</h2>
-    <div class="slide-list" id="slideList"></div>
-
-    <div class="add-section">
-      <h2>슬라이드 추가</h2>
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <button class="icon-btn" style="flex:1;font-size:12px;" id="saveTemplateBtn">💾 템플릿 저장</button>
-        <button class="icon-btn" style="flex:1;font-size:12px;" id="loadTemplateBtn">📂 불러오기</button>
-      </div>
-      <div id="slideTypeGrid">
-        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:5px;">📋 설문</div>
-        <div class="type-row">
-          <button class="type-card sel" data-type="mc">객관식</button>
-          <button class="type-card" data-type="wordcloud">워드클라우드</button>
-          <button class="type-card" data-type="ox">OX</button>
-        </div>
-        <div class="quiz-divider">🏆 퀴즈</div>
-        <div class="type-row" style="flex-wrap:wrap;">
-          <button class="type-card type-quiz" data-type="ox_quiz">OX퀴즈</button>
-          <button class="type-card type-quiz" data-type="short_quiz">단답형</button>
-          <button class="type-card type-quiz" data-type="image_quiz">이미지</button>
-          <button class="type-card type-quiz" data-type="video_quiz">영상퀴즈</button>
-        </div>
-      </div>
-      </div>
-      <div class="target-divider">👥 대상</div>
-      <div class="target-tabs">
-        <button data-target="all" class="sel">👨‍👦 공통</button>
-        <button data-target="father">👨 아버지</button>
-        <button data-target="son">👦 아들</button>
-      </div>
-      <input type="text" id="qInput" placeholder="질문을 입력하세요">
-      <div id="imageUrlArea" style="display:none;">
-        <input type="text" id="imageUrlInput" placeholder="이미지 URL을 붙여넣으세요 (구글드라이브, imgur 등)">
-      </div>
-      <div id="videoUrlArea" style="display:none;">
-        <input type="text" id="videoUrlInput" placeholder="유튜브 URL을 붙여넣으세요 (youtube.com/watch?v=...)">
-      </div>
-      <div id="quizAnswerArea" style="display:none;">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">✅ 정답</div>
-        <div id="oxAnswerBtns" style="display:none;gap:6px;margin-bottom:8px;">
-          <button class="quiz-ans-btn" data-ans="O" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);font-weight:700;font-size:16px;cursor:pointer;color:var(--accent);">O</button>
-          <button class="quiz-ans-btn" data-ans="X" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);font-weight:700;font-size:16px;cursor:pointer;color:var(--accent2);">X</button>
-        </div>
-        <input type="text" id="answerInput" placeholder="정답 입력" style="display:none;">
-      </div>
-      <div id="optsArea"></div>
-      <button class="small-btn" id="addOptBtn">+ 보기 추가</button>
-      <button class="primary-btn" id="createSlideBtn">슬라이드 만들기</button>
+    <!-- 퀴즈 사이드바 -->
+    <div id="sidebarQuizPanel" style="display:none;">
+      <button class="primary-btn" id="lqNewBtn" style="margin-top:14px;margin-bottom:14px;">+ 새 가사 퀴즈 만들기</button>
+      <h2>가사 퀴즈 목록</h2>
+      <div id="lqSideList"></div>
     </div>
   </div>
 
@@ -604,13 +591,11 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
     <!-- 퀴즈 모드 (가사 맞히기) -->
     <div class="quiz-mode-panel" id="quizModePanel">
 
-      <!-- 1. 목록 뷰 -->
-      <div id="lqListView" style="width:100%;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-          <div style="font-size:18px;font-weight:800;">🎵 가사 맞히기 퀴즈</div>
-          <button class="primary-btn" id="lqNewBtn" style="width:auto;padding:9px 18px;font-size:13px;">+ 새 퀴즈 만들기</button>
-        </div>
-        <div id="lqList"></div>
+      <!-- 1. 목록/편집 안내 뷰 -->
+      <div id="lqListView" style="width:100%;text-align:center;padding-top:40px;">
+        <div style="font-size:36px;margin-bottom:12px;">🎵</div>
+        <div style="font-size:18px;font-weight:800;margin-bottom:8px;color:var(--text);">가사 맞히기 퀴즈</div>
+        <div style="font-size:14px;color:var(--muted);">왼쪽 사이드바에서 퀴즈를 선택하거나<br>새 퀴즈를 만들어보세요.</div>
       </div>
 
       <!-- 2. 만들기/편집 뷰 -->
@@ -1693,13 +1678,59 @@ let currentMode = 'survey';
 document.getElementById('surveyTab').onclick = ()=> switchMode('survey');
 document.getElementById('quizTab').onclick = ()=> switchMode('quiz');
 
+document.getElementById('sidebarSurveyTab').onclick = ()=> switchMode('survey');
+document.getElementById('sidebarQuizTab').onclick = ()=> switchMode('quiz');
+
 function switchMode(mode){
   currentMode = mode;
+  // 상단 탭
   document.getElementById('surveyTab').classList.toggle('active', mode==='survey');
   document.getElementById('quizTab').classList.toggle('active', mode==='quiz');
+  // 사이드바 탭
+  document.getElementById('sidebarSurveyTab').classList.toggle('active', mode==='survey');
+  document.getElementById('sidebarQuizTab').classList.toggle('active', mode==='quiz');
+  // 사이드바 패널
+  document.getElementById('sidebarSurveyPanel').style.display = mode==='survey' ? 'block' : 'none';
+  document.getElementById('sidebarQuizPanel').style.display = mode==='quiz' ? 'block' : 'none';
+  // 스테이지
   document.getElementById('surveyStage').style.display = mode==='survey' ? 'flex' : 'none';
   document.getElementById('quizModePanel').classList.toggle('show', mode==='quiz');
-  if(mode==='quiz') lqShowList();
+  if(mode==='quiz'){ lqShowList(); lqRenderSideList(); }
+}
+
+function lqRenderSideList(){
+  const listEl = document.getElementById('lqSideList');
+  db.ref('sessions/'+sessionCode+'/lyricsQuizzes').get().then(snap=>{
+    const data = snap.val()||{};
+    const items = Object.entries(data).sort((a,b)=>a[1].createdAt-b[1].createdAt);
+    if(!items.length){
+      listEl.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px 0;">아직 퀴즈가 없어요.</div>';
+      return;
+    }
+    listEl.innerHTML = items.map(([id,q])=>`
+      <div class="lq-item" data-lqid="${id}" style="padding:10px 12px;">
+        <div class="lq-info">
+          <div class="lq-title" style="font-size:13px;">🎵 ${escapeHtml(q.title||'제목 없음')}</div>
+          <div class="lq-meta">숨김 ${(q.hidden||[]).length}음절</div>
+        </div>
+        <button class="lq-del" data-delid="${id}">✕</button>
+      </div>`).join('');
+    listEl.querySelectorAll('.lq-item').forEach(el=>{
+      el.onclick = e=>{
+        if(e.target.classList.contains('lq-del')) return;
+        const id = el.dataset.lqid;
+        lqPlay(id, data[id]);
+      };
+    });
+    listEl.querySelectorAll('.lq-del').forEach(btn=>{
+      btn.onclick = e=>{
+        e.stopPropagation();
+        if(confirm('삭제할까요?'))
+          db.ref('sessions/'+sessionCode+'/lyricsQuizzes/'+btn.dataset.delid)
+            .remove().then(()=>{ lqShowList(); lqRenderSideList(); });
+      };
+    });
+  });
 }
 
 // ── 가사 퀴즈 (Lyrics Quiz) ──
@@ -1810,7 +1841,11 @@ document.getElementById('lqSaveBtn').onclick = ()=>{
   const ref = lqEditingId
     ? db.ref('sessions/'+sessionCode+'/lyricsQuizzes/'+lqEditingId)
     : db.ref('sessions/'+sessionCode+'/lyricsQuizzes').push();
-  ref.set(data).then(()=>{ lqEditingId=null; lqShowList(); lqShowView('lqListView'); });
+  ref.set(data).then(()=>{
+    lqEditingId=null;
+    lqShowList();
+    lqRenderSideList();
+  });
 };
 
 // 진행
