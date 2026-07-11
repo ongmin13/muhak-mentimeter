@@ -573,6 +573,7 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
     <div class="code-pill" id="codePill">코드 생성 중...</div>
     <button class="icon-btn" id="qrOpenBtn">QR보기</button>
     <button class="icon-btn" id="presenterBtn">📺 발표자 모드</button>
+    <button class="icon-btn" id="quizModeBtn">🏆 퀴즈 모드</button>
     <button class="icon-btn" id="exportBtn">📊 내보내기</button>
     <button class="start-btn" id="startBtn">세션 시작</button>
   </div>
@@ -698,9 +699,6 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
         </div>
         <div id="lqRevealedArea" style="display:none;margin-top:16px;">
           <button class="quiz-reveal-big" id="lqHideBtn" style="max-width:260px;font-size:14px;padding:12px 28px;background:#9C8770;">↩ 다시 숨기기</button>
-        </div>
-        <div style="margin-top:16px;">
-          <button class="quiz-reveal-big" id="lqPresentBtn" style="max-width:300px;font-size:17px;padding:16px 36px;background:linear-gradient(135deg,#2c1810,#4a2c1a);border:1px solid rgba(255,255,255,.2);">🎬 발표 모드로 보기</button>
         </div>
       </div>
 
@@ -976,19 +974,6 @@ document.getElementById('qrCloseBtn').onclick = ()=> document.getElementById('qr
 // 발표자 모드
 const presenterOverlay = document.getElementById('presenterOverlay');
 document.getElementById('presenterBtn').onclick = ()=>{
-  // 퀴즈 탭이면 퀴즈 발표 모드로
-  if(currentMode === 'quiz'){
-    db.ref('sessions/'+sessionCode+'/lyricsQuizzes').get().then(snap=>{
-      const data = snap.val()||{};
-      const items = Object.entries(data).sort((a,b)=>a[1].createdAt-b[1].createdAt);
-      if(!items.length){ alert('퀴즈가 없습니다. 먼저 가사 퀴즈를 추가해주세요.'); return; }
-      const allQuizzes = items.map(([,q])=>q);
-      lqPresent(allQuizzes[0], allQuizzes);
-      document.getElementById('quizPresenter').requestFullscreen?.().catch(()=>{});
-    });
-    return;
-  }
-  // 설문 탭이면 기존 발표자 모드
   presenterOverlay.classList.add('show');
   document.getElementById('pCode').innerHTML = '입장코드 <b>'+sessionCode+'</b>';
   const pQrEl = document.getElementById('presenterQrCode');
@@ -1004,7 +989,17 @@ document.getElementById('presenterBtn').onclick = ()=>{
   presenterOverlay.requestFullscreen?.().catch(()=>{});
 };
 
-// QR 접기/펼치기
+// 퀴즈 모드 버튼 (항상 표시)
+document.getElementById('quizModeBtn').onclick = ()=>{
+  db.ref('sessions/'+sessionCode+'/lyricsQuizzes').get().then(snap=>{
+    const data = snap.val()||{};
+    const items = Object.entries(data).sort((a,b)=>a[1].createdAt-b[1].createdAt);
+    if(!items.length){ alert('퀴즈가 없습니다. 퀴즈 탭에서 먼저 가사 퀴즈를 추가해주세요.'); return; }
+    const allQuizzes = items.map(([,q])=>q);
+    lqPresent(allQuizzes[0], allQuizzes);
+    document.getElementById('quizPresenter').requestFullscreen?.().catch(()=>{});
+  });
+};
 let presenterQrVisible = true;
 document.getElementById('presenterQrToggle').onclick = ()=>{
   presenterQrVisible = !presenterQrVisible;
@@ -1639,8 +1634,6 @@ function switchMode(mode){
   // 사이드바 패널
   document.getElementById('sidebarSurveyPanel').style.display = mode==='survey' ? 'block' : 'none';
   document.getElementById('sidebarQuizPanel').style.display = mode==='quiz' ? 'block' : 'none';
-  // 버튼 레이블 전환
-  document.getElementById('presenterBtn').textContent = mode==='quiz' ? '🎬 발표 모드' : '📺 발표자 모드';
   document.getElementById('surveyStage').style.display = mode==='survey' ? 'flex' : 'none';
   document.getElementById('quizModePanel').classList.toggle('show', mode==='quiz');
   if(mode==='quiz'){ lqShowList(); lqRenderSideList(); }
@@ -1805,7 +1798,7 @@ function lqPlay(id, q){
     document.getElementById('lqRevealedArea').style.display='none';
   };
   // 발표 모드 버튼
-  document.getElementById('lqPresentBtn').onclick = ()=> lqPresent(q);
+  // 발표 모드는 우측 상단 '퀴즈 모드' 버튼으로 진입
 }
 
 // ── 퀴즈 발표 모드 (전체화면 어두운 배경) ──
@@ -1842,13 +1835,16 @@ function qpShowCurrent(){
     qpRenderLyrics(q.lyrics, q.hidden||[], true);
     document.getElementById('qpRevealBtn').style.display='none';
     if(q.youtubeUrl){
-      const embedUrl = getYoutubeEmbedUrl(q.youtubeUrl);
-      if(embedUrl){
-        const autoplay = embedUrl + (embedUrl.includes('?')?'&':'?') + 'autoplay=1';
-        document.getElementById('qpYoutube').innerHTML =
-          `<iframe src="${autoplay}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-        document.getElementById('qpYoutube').style.display='block';
-      }
+      const ytDiv = document.getElementById('qpYoutube');
+      ytDiv.innerHTML = `
+        <a href="${escapeHtml(q.youtubeUrl)}" target="_blank" rel="noopener"
+          style="display:inline-flex;align-items:center;gap:10px;
+          background:#FF0000;color:#fff;font-size:18px;font-weight:700;
+          padding:16px 36px;border-radius:14px;text-decoration:none;
+          transition:.15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          ▶ YouTube에서 노래 듣기
+        </a>`;
+      ytDiv.style.display='block';
     }
   };
 }
