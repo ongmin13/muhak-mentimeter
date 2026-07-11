@@ -625,7 +625,11 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
 
     <!-- 퀴즈 사이드바 -->
     <div id="sidebarQuizPanel" style="display:none;">
-      <button class="primary-btn" id="lqNewBtn" style="margin-top:14px;margin-bottom:14px;">+ 새 가사 퀴즈 만들기</button>
+      <div style="display:flex;gap:6px;margin-top:14px;margin-bottom:10px;">
+        <button class="icon-btn" style="flex:1;font-size:12px;" id="lqSaveTemplateBtn">💾 템플릿 저장</button>
+        <button class="icon-btn" style="flex:1;font-size:12px;" id="lqLoadTemplateBtn">📂 불러오기</button>
+      </div>
+      <button class="primary-btn" id="lqNewBtn" style="margin-bottom:14px;">+ 새 가사 퀴즈 만들기</button>
       <h2>가사 퀴즈 목록</h2>
       <div id="lqSideList"></div>
     </div>
@@ -725,6 +729,21 @@ input[type=text],textarea{width:100%;padding:9px 11px;border-radius:7px;border:1
       <button class="qp-reveal-btn" id="qpRevealBtn">🎯 정답 확인</button>
     </div>
     <div class="qp-youtube" id="qpYoutube" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- 퀴즈 템플릿 모달 -->
+<div class="tpl-modal" id="lqTplModal">
+  <div class="tpl-box">
+    <div class="tpl-header">
+      <div class="tpl-title">🎵 가사 퀴즈 템플릿</div>
+      <button class="tpl-close" id="lqTplCloseBtn">✕</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <input type="text" id="lqTplNameInput" placeholder="템플릿 이름 입력" style="flex:1;">
+      <button class="primary-btn" id="lqTplSaveConfirmBtn" style="width:auto;padding:0 16px;font-size:13px;">저장</button>
+    </div>
+    <div id="lqTplList"></div>
   </div>
 </div>
 
@@ -2023,6 +2042,78 @@ function loadTemplate(tpl){
   });
   document.getElementById('tplModal').classList.remove('show');
   alert(`"${tpl.name}" 슬라이드 ${tpl.slides.length}개를 불러왔습니다.`);
+}
+
+// ── 퀴즈 템플릿 저장/불러오기 ──
+document.getElementById('lqSaveTemplateBtn').onclick = ()=>{
+  document.getElementById('lqTplNameInput').value = '';
+  lqRenderTplList();
+  document.getElementById('lqTplModal').classList.add('show');
+};
+document.getElementById('lqLoadTemplateBtn').onclick = ()=>{
+  document.getElementById('lqTplNameInput').value = '';
+  lqRenderTplList();
+  document.getElementById('lqTplModal').classList.add('show');
+};
+document.getElementById('lqTplCloseBtn').onclick = ()=>
+  document.getElementById('lqTplModal').classList.remove('show');
+
+document.getElementById('lqTplSaveConfirmBtn').onclick = ()=>{
+  const name = document.getElementById('lqTplNameInput').value.trim();
+  if(!name){ alert('템플릿 이름을 입력해주세요.'); return; }
+  db.ref('sessions/'+sessionCode+'/lyricsQuizzes').get().then(snap=>{
+    const data = snap.val()||{};
+    const quizzes = Object.values(data).sort((a,b)=>a.createdAt-b.createdAt)
+      .map(({title, lyrics, hidden, youtubeUrl})=>{
+        const q = {title, lyrics, hidden};
+        if(youtubeUrl) q.youtubeUrl = youtubeUrl;
+        return q;
+      });
+    if(!quizzes.length){ alert('저장할 퀴즈가 없습니다.'); return; }
+    db.ref('lyricsTemplates/'+name).set({name, savedAt:Date.now(), quizzes})
+      .then(()=>{ alert(`"${name}" 템플릿으로 저장했습니다.`); lqRenderTplList(); });
+  });
+};
+
+function lqRenderTplList(){
+  const list = document.getElementById('lqTplList');
+  list.innerHTML = '<div class="tpl-empty">불러오는 중...</div>';
+  db.ref('lyricsTemplates').get().then(snap=>{
+    const all = snap.val()||{};
+    const entries = Object.entries(all).sort((a,b)=>b[1].savedAt-a[1].savedAt);
+    if(!entries.length){ list.innerHTML='<div class="tpl-empty">저장된 템플릿이 없습니다.</div>'; return; }
+    list.innerHTML = '';
+    entries.forEach(([key, tpl])=>{
+      const cnt = (tpl.quizzes||[]).length;
+      const date = new Date(tpl.savedAt).toLocaleDateString('ko-KR');
+      const item = document.createElement('div');
+      item.className = 'tpl-item';
+      item.innerHTML = `
+        <div>
+          <div class="tpl-name">${escapeHtml(tpl.name)}</div>
+          <div class="tpl-cnt">퀴즈 ${cnt}개 · ${date}</div>
+        </div>
+        <div class="tpl-item-right">
+          <button class="tpl-load-btn">불러오기</button>
+          <button class="tpl-del-btn">삭제</button>
+        </div>`;
+      item.querySelector('.tpl-load-btn').onclick = ()=>{
+        if(!confirm(`"${tpl.name}" 템플릿을 불러올까요?\n현재 퀴즈 목록에 추가됩니다.`)) return;
+        const now = Date.now();
+        (tpl.quizzes||[]).forEach((q,i)=>{
+          db.ref('sessions/'+sessionCode+'/lyricsQuizzes').push({...q, createdAt:now+i});
+        });
+        document.getElementById('lqTplModal').classList.remove('show');
+        lqRenderSideList();
+        alert(`"${tpl.name}" 퀴즈 ${tpl.quizzes.length}개를 불러왔습니다.`);
+      };
+      item.querySelector('.tpl-del-btn').onclick = ()=>{
+        if(confirm(`"${tpl.name}" 템플릿을 삭제할까요?`))
+          db.ref('lyricsTemplates/'+key).remove().then(()=>lqRenderTplList());
+      };
+      list.appendChild(item);
+    });
+  });
 }
 </script>
 </body>
